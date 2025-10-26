@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Mengarahkan...</title>
+  <meta name="robots" content="noindex">
+  <script>
+    window.onload = () => {
+      const path = window.location.pathname; // contoh: "/tujamsos", "/admin/tujamsos", dll
+      console.log("404 intercept:", path);
+
+      // Daftar path yang tidak boleh dianggap tenant
+      const reserved = [
+        "", "/", "index", "index.html",
+        "admin", "admin.html",
+        "super-admin", "super-admin.html",
+        "daftar", "daftar.html",
+        "404.html"
+      ];
+
+      // === 1️⃣ /admin.html/<tenant> → /admin.html?u=<tenant> ===
+      const matchAdminHtml = path.match(/^\/admin\.html\/([\w-]+)$/);
+      if (matchAdminHtml) {
+        const tenant = matchAdminHtml[1];
+        window.location.replace(`/admin.html?u=${tenant}`);
+        return;
+      }
+
+      // === 2️⃣ /admin/<tenant> → /admin.html?u=<tenant> ===
+      const matchAdminDir = path.match(/^\/admin\/([\w-]+)$/);
+      if (matchAdminDir) {
+        const tenant = matchAdminDir[1];
+        window.location.replace(`/admin.html?u=${tenant}`);
+        return;
+      }
+
+      // === 3️⃣ /<tenant> langsung (selama bukan reserved) → /?u=<tenant> ===
+      const matchTenant = path.match(/^\/([\w-]+)$/);
+      if (matchTenant) {
+        const tenant = matchTenant[1];
+        if (!reserved.includes(tenant)) {
+          window.location.replace(`/?u=${tenant}`);
+          return;
+        }
+      }
+
+      // === 4️⃣ Fallback ke home.html ===
+      window.location.replace("/home.html");
+    };
+  </script>
+</head>
+<body>
+  <p style="font-family:sans-serif; text-align:center; margin-top:30vh;">
+    Mengarahkan ke halaman tenant...
+  </p>
+</body>
+</html>
+

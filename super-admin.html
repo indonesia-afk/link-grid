@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Super Admin – Tenant Manager</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #f4f7f9;
+      color: #1a202c;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, .08);
+      padding: 28px;
+      width: 100%;
+      max-width: 480px;
+      border: 1px solid #e2e8f0;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 1.4em;
+      margin-bottom: 18px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #cbd5e0;
+      border-radius: 10px;
+      font-size: .95em;
+      margin-bottom: 14px;
+      box-sizing: border-box;
+      text-align: center;
+      transition: border .3s ease, box-shadow .3s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #3182ce;
+      box-shadow: 0 0 0 2px rgba(49, 130, 206, 0.2);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #3182ce;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1em;
+      cursor: pointer;
+      transition: background .25s ease, transform .25s ease;
+      margin-bottom: 10px;
+    }
+
+    button:hover {
+      background: #2563eb;
+      transform: translateY(-2px);
+    }
+
+    #logoutBtn {
+      background: #e2e8f0;
+      color: #1a202c;
+      margin-top: 8px;
+    }
+
+    #logoutBtn:hover {
+      background: #cbd5e0;
+    }
+
+    /* ===== Daftar Tenant ===== */
+    .tenant-list {
+      margin-top: 20px;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      background: #f9fafb;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .9em;
+    }
+
+    th,
+    td {
+      padding: 10px 8px;
+      border-bottom: 1px solid #e2e8f0;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #edf2f7;
+      font-weight: 600;
+      color: #2d3748;
+    }
+
+    tr:hover td {
+      background: #f1f5f9;
+    }
+
+    .danger-btn {
+      background: #e53e3e;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: .85em;
+      cursor: pointer;
+      transition: background .25s ease;
+    }
+
+    .danger-btn:hover {
+      background: #c53030;
+    }
+
+    #refreshBtn {
+      background: #63b3ed;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1em;
+      cursor: pointer;
+      padding: 12px;
+      margin-top: 12px;
+      width: 100%;
+      transition: background .25s ease, transform .25s ease;
+    }
+
+    #refreshBtn:hover {
+      background: #3182ce;
+      transform: translateY(-2px);
+    }
+
+    /* ===== Font kecil & wrap ===== */
+    .small-cell {
+      font-size: .8em;
+      word-break: break-word;
+      line-height: 1.4;
+      white-space: normal;
+      max-width: 180px;
+    }
+
+    /* ===== Ikon tautan tenant ===== */
+    .tenant-link {
+      text-decoration: none;
+      color: #3182ce;
+      font-size: .85em;
+      margin-left: 6px;
+    }
+
+    .tenant-link:hover {
+      color: #2563eb;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- === LOGIN === -->
+  <div class="card" id="loginCard">
+    <h2>Login Super Admin</h2>
+    <input type="email" id="email" placeholder="Email (mis: admin@tommy.or.id)">
+    <input type="password" id="password" placeholder="Password">
+    <button id="loginBtn">Masuk</button>
+    <div id="loginMsg" style="margin-top:10px;font-size:.9em;color:#718096;"></div>
+  </div>
+
+  <!-- === DASHBOARD === -->
+  <div class="card" id="adminCard" style="display:none;">
+    <h2>Buat Tenant Baru</h2>
+
+    <input type="text" id="tenantName" placeholder="Nama Tenant">
+    <input type="email" id="tenantEmail" placeholder="Email Admin Tenant">
+    <input type="password" id="tenantPass" placeholder="Password Tenant">
+
+    <button id="createBtn">Buat Tenant</button>
+    <button id="logoutBtn">Keluar</button>
+
+    <!-- Daftar tenant -->
+    <div class="tenant-list" id="tenantList">
+      <table>
+        <thead>
+          <tr>
+            <th>Tenant</th>
+            <th>Email</th>
+            <th>Tanggal</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="tenantBody">
+          <tr>
+            <td colspan="4" style="text-align:center;">Memuat data...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <button id="refreshBtn">Refresh Daftar</button>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+    import {
+      getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, createUserWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+    import {
+      getFirestore, collection, getDocs, setDoc, doc, deleteDoc, getDoc
+    } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+
+    // === Ambil konfigurasi dari Netlify ===
+    const CONFIG_URL = "https://netlify-linktree.netlify.app/.netlify/functions/get-config";
+    window.__configReady = (async () => {
+      try {
+        const res = await fetch(CONFIG_URL);
+        if (!res.ok) throw new Error("Config fetch failed " + res.status);
+        const cfg = await res.json();
+        window.APP_CONFIG = cfg;
+        return cfg;
+      } catch (e) {
+        console.error("Gagal memuat konfigurasi:", e);
+        alert("Gagal memuat konfigurasi aplikasi. Silakan muat ulang halaman.");
+        throw e;
+      }
+    })();
+
+    // === Firebase Init (dari config Netlify) ===
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+    import {
+      getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, createUserWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+    import {
+      getFirestore, collection, getDocs, setDoc, doc, deleteDoc, getDoc
+    } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+    let app, auth, db;
+    async function initFirebaseFromConfig() {
+      if (db) return db;
+      const { firebase } = await window.__configReady;
+      app = initializeApp(firebase);
+      auth = getAuth(app);
+      db = getFirestore(app);
+      console.log("✅ Firebase inisialisasi selesai (super-admin)");
+      return db;
+    }
+    await initFirebaseFromConfig();
+
+    const SUPER_UID = "LXiUV77spShK3fMu4IAH1KlWrFj2";
+
+    const loginCard = document.getElementById("loginCard");
+    const adminCard = document.getElementById("adminCard");
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const createBtn = document.getElementById("createBtn");
+    const refreshBtn = document.getElementById("refreshBtn");
+    const loginMsg = document.getElementById("loginMsg");
+    const tenantBody = document.getElementById("tenantBody");
+
+    function row(msg) {
+      tenantBody.innerHTML = `<tr><td colspan="4" style="text-align:center;">${msg}</td></tr>`;
+    }
+
+    function shortDate(dateStr) {
+      const d = new Date(dateStr);
+      const dd = String(d.getDate()).padStart(2, "0");
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const yy = String(d.getFullYear()).slice(-2);
+      return `${dd}/${mm}/${yy}`;
+    }
+
+    async function listTenants() {
+      row("Memuat data...");
+      const snap = await getDocs(collection(db, "admins"));
+      if (snap.empty) return row("Belum ada tenant");
+      tenantBody.innerHTML = "";
+
+      snap.forEach(docSnap => {
+        const d = docSnap.data();
+        const tenant = docSnap.id;
+        const email = d.email || "-";
+        const created = d.createdAt ? shortDate(d.createdAt) : "-";
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+      <td class="small-cell">
+        ${tenant}
+        <a href="https://link-gr.id/?u=${tenant}" target="_blank"
+          class="tenant-link" title="Lihat halaman tenant">🔗</a>
+              </td>
+              <td class="small-cell">
+                ${email}
+        <a href="https://link-gr.id/admin.html?u=${tenant}" target="_blank"
+          class="tenant-link" title="Buka panel admin @${tenant}">
+          <i class="fas fa-external-link-alt"></i>
+        </a>
+      </td>
+      <td class="small-cell">${created}</td>
+      <td style="text-align:center;">
+        <button class="danger-btn" onclick="window.deleteTenant('${tenant}')">Hapus</button>
+      </td>`;
+        tenantBody.appendChild(tr);
+      });
+    }
+
+    window.deleteTenant = async function (tenant) {
+      if (!confirm(`Hapus tenant '${tenant}'?`)) return;
+      row(`Menghapus ${tenant}...`);
+
+      try {
+        const res = await fetch("https://netlify-linktree.netlify.app/.netlify/functions/delete-tenant", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tenant })
+        });
+
+        const out = await res.json();
+
+        if (out.success) {
+          alert(`✅ Tenant '${tenant}' berhasil dihapus (termasuk akun Auth).`);
+          await listTenants();
+        } else {
+          alert(`❌ Gagal menghapus tenant: ${out.error || "Terjadi kesalahan."}`);
+          row(`❌ Gagal: ${out.error || "Terjadi kesalahan."}`);
+        }
+
+      } catch (e) {
+        console.error("Delete error:", e);
+        row(`❌ Gagal koneksi: ${e.message}`);
+      }
+    };
+
+    async function createTenant() {
+      const name = tenantName.value.trim();
+      const email = tenantEmail.value.trim();
+      const pass = tenantPass.value.trim();
+      if (!name || !email || !pass) return alert("Isi semua kolom!");
+
+      const tenant = name.toLowerCase().replace(/[^a-z0-9_-]/g, "");
+      // Cegah duplikasi tenant
+      const existing = await getDoc(doc(db, "admins", tenant));
+      if (existing.exists()) {
+        alert(`Tenant '${tenant}' sudah ada!`);
+        return;
+      }
+      const secondaryApp = initializeApp(firebaseConfig, "Secondary");
+      const secondaryAuth = getAuth(secondaryApp);
+      const newUser = await createUserWithEmailAndPassword(secondaryAuth, email, pass);
+      const uid = newUser.user.uid;
+      await signOut(secondaryAuth);
+
+      const template = {
+        site_header: { main: { mainTitle: "Link-Grid by @TOMMY", subTitle: "Powered by https://espeje.com", logoUrl: "", logoPublicId: "" } },
+        grid_links: [
+          { name: "Link 1", url: "https://news.t-o-m.my.id", icon: "fa-clipboard-list", order: 1, active: true },
+          { name: "Link 2", url: "https://espeje.com", icon: "fa-file-alt", order: 2, active: true },
+          { name: "Link 3", url: "https://sppd.espeje.com", icon: "fa-envelope", order: 3, active: true },
+          { name: "Link 4", url: "https://spj.espeje.com", icon: "fa-link", order: 4, active: true }
+        ]
+      };
+
+      await setDoc(doc(db, "admins", tenant), {
+        uid,
+        email,
+        tenantId: tenant, // 🔥 tambahkan field tenantId
+        createdAt: new Date().toISOString()
+      });
+      await setDoc(doc(db, "users", tenant, "site_header", "main"), template.site_header.main);
+      for (let i = 0; i < template.grid_links.length; i++) {
+        await setDoc(doc(db, "users", tenant, "grid_links", String(i + 1)), template.grid_links[i]);
+      }
+
+      alert(`Tenant '${tenant}' berhasil dibuat!`);
+      await listTenants();
+    }
+
+    loginBtn.addEventListener("click", async () => {
+      try {
+        await signInWithEmailAndPassword(auth, email.value, password.value);
+        loginMsg.textContent = "Berhasil login...";
+      } catch {
+        loginMsg.textContent = "Login gagal.";
+      }
+    });
+
+    onAuthStateChanged(auth, (user) => {
+      const allowedEmails = ["admin@tommy.or.id", "tommy@tommy.or.id"];
+      if (user && (user.uid === SUPER_UID || allowedEmails.includes(user.email))) {
+        loginCard.style.display = "none";
+        adminCard.style.display = "block";
+        listTenants();
+      } else if (user && !allowedEmails.includes(user.email)) {
+        alert("❌ Akses ditolak.");
+        signOut(auth);
+      } else {
+        loginCard.style.display = "block";
+        adminCard.style.display = "none";
+      }
+    });
+
+    logoutBtn.addEventListener("click", () => signOut(auth));
+    createBtn.addEventListener("click", createTenant);
+    refreshBtn.addEventListener("click", listTenants);
+  </script>
+</body>
+
+</html>

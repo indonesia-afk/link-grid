@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>Buat Akun Link-Grid – by @TOMMY</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --transition: .3s;
+      --radius: 16px;
+      --primary: #3182ce;
+      --primary-dark: #2563eb;
+      --bg: #f4f7f9;
+      --text: #1a202c;
+      --border: #e2e8f0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      box-shadow: 0 6px 25px rgba(0, 0, 0, .05);
+      padding: 35px 30px 28px;
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      position: relative;
+      box-sizing: border-box;
+    }
+
+    h2 {
+      font-size: 1.4em;
+      margin-bottom: 14px;
+      color: #2d3748;
+    }
+
+    /* === Kotak info URL user/admin === */
+    .info-links {
+      font-size: .9em;
+      background: #1a202c;
+      color: #f7fafc;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      text-align: center;
+      display: none;
+      box-shadow: 0 0 0 2px rgba(49, 130, 206, .2);
+      transition: all .3s ease;
+    }
+
+    .info-links p {
+      margin: 8px 0;
+    }
+
+    .info-links a {
+      color: #63b3ed;
+      text-decoration: none;
+      font-weight: 500;
+      word-break: break-all;
+    }
+
+    .info-links a:hover {
+      color: #90cdf4;
+      text-decoration: underline;
+    }
+
+    .info-links.show {
+      animation: fadeIn .4s ease forwards;
+    }
+
+    /* Sedikit transparansi agar keduanya terasa seperti lapisan yang sama */
+    .info-links,
+    #msg {
+      backdrop-filter: blur(3px);
+    }
+
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-4px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* === Status message === */
+    #msg {
+      font-size: .9em;
+      margin-top: 16px;
+      min-height: 28px;
+      white-space: pre-line;
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: rgba(26, 32, 44, 0.9);
+      color: #f7fafc;
+      text-align: center;
+      line-height: 1.5;
+      transition: all .3s ease;
+      display: none;
+    }
+
+    #msg.loading {
+      color: #63b3ed;
+      animation: blink 1.2s infinite;
+      display: block;
+    }
+
+    #msg.error {
+      color: #f56565;
+      display: block;
+    }
+
+    #msg.success {
+      color: #68d391;
+      display: block;
+    }
+
+    #msg.info {
+      color: #edf2f7;
+      display: block;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.4;
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    input {
+      width: 100%;
+      max-width: 320px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: .95em;
+      transition: border var(--transition), box-shadow var(--transition);
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(49, 130, 206, .2);
+    }
+
+    button {
+      width: 100%;
+      max-width: 320px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 12px;
+      border-radius: var(--radius);
+      font-size: 1em;
+      cursor: pointer;
+      transition: background var(--transition), transform var(--transition);
+    }
+
+    button:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    #toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-40px);
+      background: #2d3748;
+      color: #f7fafc;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: .9em;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, .15);
+      opacity: 0;
+      pointer-events: none;
+      transition: all .5s ease;
+      z-index: 999;
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    #toast.success {
+      background: #38a169;
+    }
+
+    #toast.error {
+      background: #e53e3e;
+    }
+
+    #toast.info {
+      background: #2b6cb0;
+    }
+
+    .logo-image {
+      margin-top: 36px;
+      text-align: center;
+    }
+
+    .logo-img-card {
+      width: 100%;
+      max-width: 125px;
+      height: auto;
+      object-fit: contain;
+      display: inline-block;
+      opacity: .9;
+      transition: transform .3s ease, opacity .3s ease;
+    }
+
+    .logo-img-card:hover {
+      transform: scale(1.05);
+      opacity: 1;
+    }
+
+    footer {
+      margin-top: 1px;
+      font-size: .9em;
+      color: #a0aec0;
+      text-align: center;
+    }
+
+    footer a {
+      color: #3182ce;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 480px) {
+      .card {
+        padding: 28px 22px 24px;
+        border-radius: 16px;
+      }
+
+      h2 {
+        font-size: 1.2em;
+      }
+
+      .info-links {
+        font-size: .85em;
+      }
+
+      input,
+      button {
+        max-width: 100%;
+      }
+
+      .logo-img-card {
+        max-width: 125px;
+      }
+    }
+
+    /* ===== Logo ATAS (seperti di index.html) ===== */
+    .logo-top {
+      margin: 0 0 16px 0;
+      text-align: center;
+    }
+
+    .logo-img-top {
+      width: auto;
+      height: auto;
+      max-width: 220px;
+      max-height: 140px;
+      object-fit: contain;
+      display: inline-block;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      opacity: 0.98;
+    }
+
+    .logo-img-top:hover {
+      transform: scale(1.04);
+      opacity: 1;
+    }
+
+    @media (max-width: 500px) {
+      .logo-img-top {
+        max-width: 160px;
+        max-height: 100px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+
+    <!-- LOGO ATAS (seperti index.html) -->
+    <div class="logo-top">
+      <img src="logo-default.png" alt="Logo Atas" class="logo-img-top" id="topLogo">
+    </div>
+
+    <h2>Buat Akun Baru<br>Link-Grid</h2><br>
+
+    <div class="info-links" id="infoLinks">
+      <p>🌐 Alamat URL Link-Grid kamu:<br>
+        <a id="linkUser" href="#" target="_blank">https://link-gr.id/...</a>
+      </p>
+      <p>🛠️ Halaman Admin kamu:<br>
+        <a id="linkAdmin" href="#" target="_blank">https://link-gr.id/admin/...</a>
+      </p>
+    </div>
+
+    <div class="form-group">
+      <input id="user" placeholder="User Name (huruf/angka saja)">
+      <input id="email" type="email" placeholder="Email Address">
+      <input id="pass" type="password" placeholder="Password">
+      <input id="pass2" type="password" placeholder="Confirm Password">
+      <input type="text" id="favorite_color" name="favorite_color" autocomplete="off" style="display:none">
+      <button id="buat">Buat Akun Link-Grid</button>
+    </div>
+
+    <div id="msg"></div>
+
+    <div class="logo-image">
+      <a href="https://espeje.com" target="_blank" rel="noopener noreferrer">
+        <img src="logo-header.png" alt="Logo Portal" class="logo-img-card">
+      </a>
+    </div>
+
+    <footer>
+      <a href="https://link-gr.id/home" target="_blank">Link-Grid </a>by @TOMMY<br>
+      Powered by <a href="https://espeje.com" target="_blank">https://espeje.com</a><br>
+    </footer>
+  </div>
+
+  <div id="toast"></div>
+
+  <script>
+    const apiURL = "https://netlify-linktree.netlify.app/.netlify/functions/create-tenant";
+    const elUser = document.getElementById("user");
+    const elEmail = document.getElementById("email");
+    const elPass = document.getElementById("pass");
+    const elMsg = document.getElementById("msg");
+    const elBtn = document.getElementById("buat");
+    const toast = document.getElementById("toast");
+    const infoBox = document.getElementById("infoLinks");
+    const linkUser = document.getElementById("linkUser");
+    const linkAdmin = document.getElementById("linkAdmin");
+
+    function showToast(message, type = "info") {
+      toast.textContent = message;
+      toast.className = "show " + type;
+      setTimeout(() => toast.className = toast.className.replace("show", ""), 2500);
+    }
+
+    function setMsg(type, text, showPopup = true) {
+      elMsg.className = type;
+      elMsg.textContent = text;
+      elMsg.style.display = "block";
+      if (showPopup) showToast(text, type);
+    }
+
+    function isValidUserName(name) {
+      return /^[a-zA-Z0-9_-]{3,20}$/.test(name);
+    }
+
+    elUser.addEventListener("input", () => {
+      const user = elUser.value.trim().toLowerCase();
+      if (isValidUserName(user)) {
+        infoBox.style.display = "block";
+        infoBox.classList.add("show");
+        linkUser.textContent = `https://link-gr.id/${user}`;
+        linkUser.href = `https://link-gr.id/${user}`;
+        linkAdmin.textContent = `https://link-gr.id/admin/${user}`;
+        linkAdmin.href = `https://link-gr.id/admin/${user}`;
+      } else {
+        infoBox.style.display = "none";
+      }
+    });
+
+    elBtn.addEventListener("click", async () => {
+      const user = (elUser.value || "").trim().toLowerCase();
+      const email = (elEmail.value || "").trim();
+      const pass = (elPass.value || "").trim();
+      const pass2 = (document.getElementById("pass2").value || "").trim();
+      const honeypot = (document.getElementById("favorite_color").value || "").trim();
+
+      if (honeypot) return setMsg("error", "Terdeteksi sebagai bot!");
+      if (!user || !email || !pass) return setMsg("error", "Isi semua kolom!");
+      if (!isValidUserName(user)) return setMsg("error", "Nama user hanya huruf, angka, - atau _ (3–20 karakter)");
+      if (pass !== pass2) return setMsg("error", "Password tidak cocok!");
+
+      setMsg("loading", "⏳ Mengecek nama user...");
+      elBtn.disabled = true;
+
+      try {
+        const resCheck = await fetch(apiURL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tenantName: user, checkOnly: true, favorite_color: honeypot })
+        });
+        const check = await resCheck.json();
+        if (check.exists) {
+          setMsg("error", "❌ User sudah ada, gunakan nama lain.");
+          elBtn.disabled = false;
+          return;
+        }
+
+        setMsg("info", "🛠 Membuat akun user baru...");
+        const res = await fetch(apiURL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tenantName: user, email, password: pass, favorite_color: honeypot })
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          const adminURL = `https://link-gr.id/admin/${data.tenant}`;
+          let countdown = 10;
+          const updateMsg = () => {
+            elMsg.className = "success";
+            elMsg.style.display = "block";
+            elMsg.innerHTML = `
+              ✅ Akun <b>${data.tenant}</b> berhasil dibuat!<br>
+              🛠️ Halaman Admin kamu:
+              <a href="${adminURL}" target="_blank" style="color:#63b3ed">${adminURL}</a><br>
+              Browser akan membuka halaman admin kamu dalam ${countdown} detik...
+            `;
+          };
+          updateMsg();
+          showToast("Akun berhasil dibuat!", "success");
+          const interval = setInterval(() => {
+            countdown--;
+            updateMsg();
+            if (countdown < 0) {
+              clearInterval(interval);
+              window.location.href = `admin.html?u=${data.tenant}`;
+            }
+          }, 1000);
+        } else {
+          setMsg("error", "❌ " + (data.error || "Terjadi kesalahan tak dikenal."));
+        }
+      } catch (err) {
+        setMsg("error", "🚫 Koneksi gagal: " + err.message);
+      } finally {
+        elBtn.disabled = false;
+      }
+    });
+
+    // === Prefill dari parameter URL (?u=namauser) ===
+    (function prefillUser() {
+      const params = new URLSearchParams(window.location.search);
+      const preset = params.get('u');
+      if (preset && /^[a-zA-Z0-9_-]{3,20}$/.test(preset)) {
+        elUser.value = preset.toLowerCase();
+        // Jalankan event input agar info-links langsung muncul
+        elUser.dispatchEvent(new Event('input'));
+      }
+    })();
+
+
+  </script>
+</body>
+
+
+</html>

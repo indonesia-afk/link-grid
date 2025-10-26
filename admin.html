@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Panel - Link-Grid</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --transition: .3s;
+      --radius: 16px;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #f4f7f9;
+      color: #1a202c;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 24px;
+      transition: background var(--transition), color var(--transition);
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      box-shadow: 0 6px 25px rgba(0, 0, 0, .05);
+      padding: 28px;
+      width: 100%;
+      max-width: 440px;
+      text-align: center;
+      position: relative;
+      margin: 0 auto;
+    }
+
+    @media (max-width:600px) {
+      body {
+        padding: clamp(18px, 5vw, 28px)
+      }
+
+      .card {
+        padding: clamp(20px, 4.5vw, 26px);
+        border-radius: 16px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, .06);
+        max-width: 100%
+      }
+    }
+
+    .logo-icon {
+      font-size: 3em;
+      color: #3182ce;
+      margin-bottom: 15px
+    }
+
+    label {
+      display: block;
+      text-align: left;
+      font-size: .85em;
+      color: #4a5568;
+      margin-bottom: 4px
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd5e0;
+      border-radius: 10px;
+      font-size: .95em;
+      margin-bottom: 12px;
+      box-sizing: border-box;
+      font-family: inherit;
+      transition: border var(--transition)
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #3182ce
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+      max-height: 250px
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      font-size: 1em;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      transition: all var(--transition)
+    }
+
+    .btn-primary {
+      background: #3182ce;
+      color: #fff
+    }
+
+    .btn-primary:hover {
+      background: #2563eb;
+      transform: translateY(-2px)
+    }
+
+    .btn-secondary {
+      background: #e2e8f0;
+      color: #1a202c
+    }
+
+    .btn-secondary:hover {
+      background: #cbd5e0;
+      transform: translateY(-2px)
+    }
+
+    .grid-item {
+      background: #f9fafb;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+      text-align: left;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: center
+    }
+
+    .grid-item .url {
+      color: #3182ce;
+      font-size: .85em;
+      word-break: break-all;
+      grid-column: 1/-1;
+      margin-top: 4px
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .actions button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 5px 10px;
+      font-size: .85em;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      cursor: pointer;
+      height: 30px;
+      line-height: 1;
+      position: relative;
+      top: -1px
+    }
+
+    .actions button:hover {
+      filter: brightness(.97)
+    }
+
+    .actions label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+      padding: 0;
+      height: 30px
+    }
+
+    .toggle {
+      appearance: none;
+      width: 44px;
+      height: 24px;
+      border-radius: 12px;
+      background: #cbd5e0;
+      position: relative;
+      top: -2px;
+      cursor: pointer;
+      transition: background .25s ease;
+      outline: none;
+      flex-shrink: 0;
+      vertical-align: middle
+    }
+
+    .toggle::before {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      top: 2px;
+      left: 2px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .3);
+      transition: transform .25s ease
+    }
+
+    .toggle:checked {
+      background: #3182ce
+    }
+
+    .toggle:checked::before {
+      transform: translateX(20px)
+    }
+
+    body.dark-mode .toggle {
+      background: #555
+    }
+
+    body.dark-mode .toggle:checked {
+      background: #2563eb
+    }
+
+    .toast-actions {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px
+    }
+
+    .toast-actions .toast-btn {
+      flex: 0 0 100px;
+      text-align: center
+    }
+
+    #theme-switcher {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: #e2e8f0;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 18px;
+      cursor: pointer
+    }
+
+    footer {
+      margin-top: 1px;
+      font-size: .9em;
+      color: #a0aec0
+    }
+
+    footer a {
+      color: #3182ce;
+      text-decoration: none
+    }
+
+    footer a:hover {
+      text-decoration: underline
+    }
+
+    body.dark-mode {
+      background: #121212;
+      color: #e2e8f0
+    }
+
+    body.dark-mode .card {
+      background: #1e1e1e;
+      border-color: #333
+    }
+
+    body.dark-mode input,
+    body.dark-mode textarea {
+      background: #2a2a2a;
+      color: #fff;
+      border-color: #444
+    }
+
+    body.dark-mode .grid-item {
+      background: #2a2a2a;
+      border-color: #444
+    }
+
+    body.dark-mode #theme-switcher {
+      background: #2a2a2a;
+      color: #fff
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 255, 255, .95);
+      color: #1a202c;
+      border-radius: 14px;
+      padding: 14px 18px;
+      box-shadow: 0 6px 25px rgba(0, 0, 0, .15);
+      backdrop-filter: blur(8px);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .3s ease, visibility .3s ease;
+      text-align: center;
+      z-index: 10000;
+      min-width: 220px
+    }
+
+    .toast.show {
+      opacity: 1;
+      visibility: visible
+    }
+
+    .toast-btn {
+      margin-top: 10px;
+      background: #3182ce;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 16px;
+      cursor: pointer
+    }
+
+    body.dark-mode .toast {
+      background: rgba(30, 30, 30, .9);
+      color: #e2e8f0
+    }
+
+    .logo-image {
+      margin-top: 24px;
+      text-align: center
+    }
+
+    .logo-img-card {
+      width: 100%;
+      max-width: 125px;
+      height: auto;
+      object-fit: contain;
+      display: inline-block;
+      opacity: .9;
+      transition: transform .3s ease, opacity .3s ease
+    }
+
+    .logo-img-card:hover {
+      transform: scale(1.05);
+      opacity: 1
+    }
+
+    body.dark-mode .logo-img-card {
+      filter: brightness(1.1) contrast(1.1)
+    }
+
+    .logo-top-admin {
+      margin: 0 0 16px 0;
+      text-align: center
+    }
+
+    .logo-img-top-admin {
+      width: auto;
+      height: auto;
+      max-width: 160px;
+      max-height: 90px;
+      object-fit: contain;
+      display: inline-block;
+      opacity: .95;
+      transition: transform .3s ease, opacity .3s ease
+    }
+
+    .logo-img-top-admin:hover {
+      transform: scale(1.05);
+      opacity: 1
+    }
+
+    @media (max-width:500px) {
+      .logo-img-top-admin {
+        max-width: 120px;
+        max-height: 70px
+      }
+    }
+
+    body.dark-mode .logo-img-top-admin {
+      filter: brightness(1.1) contrast(1.1)
+    }
+
+    #dashboard label {
+      margin-top: 10px;
+      margin-bottom: 4px;
+      display: block
+    }
+
+    #dashboard label:first-of-type {
+      margin-top: 0
+    }
+
+    #saveHeader {
+      margin-bottom: 10px
+    }
+
+    label[for="logoUpload"] {
+      margin-top: 10px
+    }
+
+    #dashboard hr {
+      margin: 24px 0;
+      opacity: .3
+    }
+
+    #uploadLogo {
+      background: #3182ce !important;
+      color: #fff !important;
+      border: none
+    }
+
+    #uploadLogo:hover {
+      background: #2563eb !important;
+      transform: translateY(-2px)
+    }
+
+    .tenant-url {
+      margin: 10px 0 18px 0;
+      text-align: center
+    }
+
+    .tenant-url-label {
+      font-size: .8em;
+      color: #718096
+    }
+
+    body.dark-mode .tenant-url-label {
+      color: #cbd5e0
+    }
+
+    .tenant-url-link {
+      display: inline-block;
+      background: rgba(0, 0, 0, .7);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 10px;
+      font-size: .85em;
+      letter-spacing: .3px;
+      text-decoration: none;
+      transition: background .3s ease, transform .3s ease
+    }
+
+    .tenant-url-link:hover {
+      background: rgba(0, 0, 0, .85);
+      transform: scale(1.02)
+    }
+
+    body.dark-mode .tenant-url-link {
+      background: rgba(255, 255, 255, .15);
+      color: #fff
+    }
+
+    .tenant-url-link:first-of-type {
+      background: rgba(0, 0, 0, .4)
+    }
+
+    .tenant-url-link:first-of-type:hover {
+      background: rgba(0, 0, 0, .55)
+    }
+
+    .tenant-url-link:last-of-type {
+      background: rgba(0, 0, 0, .7)
+    }
+
+    .tenant-url-link:last-of-type:hover {
+      background: rgba(0, 0, 0, .85)
+    }
+
+    body.dark-mode .tenant-url-link:first-of-type {
+      background: rgba(255, 255, 255, .25)
+    }
+
+    body.dark-mode .tenant-url-link:last-of-type {
+      background: rgba(255, 255, 255, .15)
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <button id="theme-switcher"><i class="fas fa-moon"></i></button>
+
+    <!-- LOGO ATAS (dinamis dari Firestore) -->
+    <div class="logo-top-admin">
+      <img src="logo-default.png" alt="Logo Admin" id="adminTopLogo" class="logo-img-top-admin">
+    </div>
+
+    <h2 id="title">Admin Login</h2>
+
+    <div id="tenantUrl" class="tenant-url" style="display:none;">
+      <div class="tenant-url-label">URL Admin Anda:</div>
+      <a href="#" target="_blank" rel="noopener noreferrer" id="tenantAdminLink" class="tenant-url-link"></a>
+
+      <div style="height:8px;"></div>
+
+      <div class="tenant-url-label">URL Publik Anda:</div>
+      <a href="#" target="_blank" rel="noopener noreferrer" id="tenantLink" class="tenant-url-link"></a>
+
+      <!-- QR Code URL Publik -->
+      <div class="tenant-url-label"><br>QR Code URL Publik Anda:</div>
+      <canvas id="tenantQrCanvas" width="160" height="160"
+        style="margin-top:6px;border-radius:12px;border:1px solid #e2e8f0;background:#fff;padding:6px;"></canvas>
+      <div style="margin-top:8px;">
+        <button id="downloadQrBtn" class="btn-secondary" style="width:auto;padding:6px 14px;font-size:.85em;">Unduh QR
+          Code</button>
+      </div>
+    </div>
+
+    <div id="loginSection">
+      <input type="email" id="email" placeholder="Email">
+      <input type="password" id="password" placeholder="Password">
+      <button id="loginBtn" class="btn-primary">Masuk</button>
+    </div>
+
+    <div id="dashboard" style="display:none;">
+      <label for="mainTitle">Judul Utama</label>
+      <input type="text" id="mainTitle" placeholder="Judul utama (maks. 2 baris)">
+
+      <label for="subTitle">Subjudul</label>
+      <textarea id="subTitle" placeholder="Subjudul (maks. 3–4 baris)"></textarea>
+      <button id="saveHeader" class="btn-primary">Simpan Header</button>
+
+      <!-- LOGO (opsional) -->
+      <label for="logoUpload">Logo (opsional)</label>
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+        <img id="logoPreview" alt="Preview Logo"
+          style="height:40px; width:auto; display:none; border-radius:6px; border:1px solid #e2e8f0; background:#fff; padding:4px;">
+        <span id="logoHint" style="font-size:.85em; color:#718096; display:none;">(logo aktif)</span>
+      </div>
+      <input type="file" id="logoUpload" accept="image/png,image/jpeg,image/webp">
+      <div style="display:flex; gap:10px; margin-bottom:12px;">
+        <button type="button" id="uploadLogo" class="btn-secondary" style="flex:1;">Upload Logo</button>
+        <button type="button" id="resetLogo" class="btn-secondary" style="flex:0 0 110px;">Reset</button>
+      </div>
+
+      <hr style="margin:20px 0;opacity:.3;">
+      <div id="listContainer"></div>
+
+      <label for="newName">Nama Link</label>
+      <input type="text" id="newName" placeholder="Nama Link (misal: Formulir Pendaftaran)">
+      <input type="url" id="newUrl" placeholder="Alamat URL (https://...)">
+
+      <div style="display:flex; gap:10px;">
+        <button id="addBtn" class="btn-primary" style="flex:1;">Tambah Link</button>
+        <button id="clearBtn" class="btn-secondary" style="flex:0 0 100px;">Bersihkan</button>
+      </div>
+
+      <button id="logoutBtn" class="btn-secondary" style="margin-top:10px;">Keluar</button>
+    </div>
+
+    <!-- LOGO BAWAH -->
+    <div class="logo-image">
+      <a href="https://espeje.com" target="_blank" rel="noopener noreferrer">
+        <img src="logo-header.png" alt="Logo Portal" class="logo-img-card">
+      </a>
+    </div>
+
+    <footer>
+      <a href="https://link-gr.id/home" target="_blank">Link-Grid </a>by @TOMMY<br>
+      Powered by <a href="https://espeje.com" target="_blank">https://espeje.com</a><br>
+    </footer>
+  </div>
+
+  <div id="toast" class="toast">
+    <div id="toastMsg"></div>
+    <button id="toastBtn" class="toast-btn" style="display:none;">OK</button>
+  </div>
+
+  <script type="module">
+    // === Bootloader Konfigurasi dari Netlify ===
+    const CONFIG_URL = "https://netlify-linktree.netlify.app/.netlify/functions/get-config";
+    window.__configReady = (async function loadConfig() {
+      try {
+        const res = await fetch(CONFIG_URL);
+        if (!res.ok) throw new Error("Config fetch failed " + res.status);
+        const cfg = await res.json();
+        window.APP_CONFIG = cfg;
+        return cfg;
+      } catch (e) {
+        console.error("Gagal memuat konfigurasi:", e);
+        alert("Gagal memuat konfigurasi aplikasi. Silakan muat ulang halaman.");
+        throw e;
+      }
+    })();
+
+    // === Import Firebase & QR ===
+    import QRCode from "https://cdn.jsdelivr.net/npm/qrcode@1.5.3/+esm";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, addDoc, deleteDoc, updateDoc, doc, setDoc, query, orderBy, getDoc, writeBatch } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+    import { getIdTokenResult } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+
+    let app, auth, db;
+    async function initFirebaseFromConfig() {
+      if (db) return db;
+      const { firebase } = await window.__configReady;
+      app = initializeApp(firebase);
+      auth = getAuth(app);
+      db = getFirestore(app);
+      console.log("✅ Firebase inisialisasi selesai");
+      return db;
+    }
+
+    // === Tenant autodetect (query ?u=) ===
+    let tenant = "tommy";
+    function detectTenant() {
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get("u");
+      return q ? q.toLowerCase() : "tommy";
+    }
+    tenant = detectTenant();
+    console.log("Admin tenant:", tenant);
+
+    window.addEventListener("popstate", async () => {
+      const newTenant = detectTenant();
+      if (newTenant !== tenant) {
+        tenant = newTenant;
+        console.log("🔄 Tenant berganti:", tenant);
+        await loadHeader();
+        await loadGrid();
+      }
+    });
+
+    // === Cloudinary config dari Netlify ===
+    const { cloudinary } = await window.__configReady;
+    const CLOUD_NAME = cloudinary.cloudName;
+    const UPLOAD_PRESET = cloudinary.uploadPreset;
+    const CLOUD_FOLDER = cloudinary.folder || "custom-linktree-logo";
+
+    // === Elemen DOM ===
+    const logoUpload = document.getElementById("logoUpload");
+    const uploadLogo = document.getElementById("uploadLogo");
+    const resetLogo = document.getElementById("resetLogo");
+    const logoPreview = document.getElementById("logoPreview");
+    const logoHint = document.getElementById("logoHint");
+
+    const loginSection = document.getElementById("loginSection");
+    const dashboard = document.getElementById("dashboard");
+    const email = document.getElementById("email");
+    const password = document.getElementById("password");
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const listContainer = document.getElementById("listContainer");
+    const addBtn = document.getElementById("addBtn");
+    const newName = document.getElementById("newName");
+    const newUrl = document.getElementById("newUrl");
+    const mainTitle = document.getElementById("mainTitle");
+    const subTitle = document.getElementById("subTitle");
+    const saveHeader = document.getElementById("saveHeader");
+    const title = document.getElementById("title");
+
+    // Theme switcher (harus dideklar sebelum dipakai di IIFE)
+    const themeSwitcher = document.getElementById("theme-switcher");
+    const body = document.body;
+    const themeIcon = themeSwitcher.querySelector("i");
+
+    let editId = null;
+
+    // Tombol Bersihkan
+    const clearBtn = document.getElementById("clearBtn");
+    clearBtn.addEventListener("click", () => {
+      newName.value = "";
+      newUrl.value = "";
+      editId = null;
+      addBtn.textContent = "Tambah Link";
+      showToast("Form dibersihkan");
+    });
+
+    // Toast helpers
+    const toast = document.getElementById("toast"),
+      toastMsg = document.getElementById("toastMsg"),
+      toastBtn = document.getElementById("toastBtn");
+    let toastTimer = null;
+    function hideToast() { toast.classList.remove("show"); toastBtn.style.display = "none"; clearTimeout(toastTimer); }
+    function showToast(msg, type = "info", ms = 2000) { toastMsg.textContent = msg; toastBtn.style.display = "none"; toast.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(hideToast, ms); }
+    function showModal(msg, type = "info", onOk = () => { }) { const old = toast.querySelector(".toast-actions"); if (old) old.remove(); toastMsg.textContent = msg; toastBtn.style.display = "inline-block"; toast.classList.add("show"); clearTimeout(toastTimer); toastBtn.onclick = () => { hideToast(); onOk(); }; }
+    function showConfirm(msg, type = "warning", onOk = () => { }, onCancel = () => { }) { const old = toast.querySelector(".toast-actions"); if (old) old.remove(); toastMsg.textContent = msg; toastBtn.style.display = "none"; toast.classList.add("show"); clearTimeout(toastTimer); const box = document.createElement("div"); box.className = "toast-actions"; const ok = document.createElement("button"); ok.className = "toast-btn"; ok.textContent = "OK"; ok.style.background = "#3182ce"; ok.style.color = "#fff"; const cancel = document.createElement("button"); cancel.className = "toast-btn"; cancel.textContent = "Batal"; cancel.style.background = "#e2e8f0"; cancel.style.color = "#1a202c"; ok.onclick = () => { hideToast(); onOk(); }; cancel.onclick = () => { hideToast(); onCancel(); }; box.append(cancel, ok); toast.appendChild(box); }
+
+    // Utils
+    function normalizeUrl(url) { if (!url) return ""; return /^https?:\/\//i.test(url) ? url : `https://${url}`; }
+    function iconFromName(name) {
+      const n = (name || "").toLowerCase();
+      if (/pdf|unduhan|download/.test(n)) return "fa-file-pdf";
+      if (/dokumen|arsip|berkas|file/.test(n)) return "fa-file-alt";
+      if (/formulir|pendaftaran|input/.test(n)) return "fa-clipboard-list";
+      if (/tutorial|panduan|video|youtube/.test(n)) return "fa-video";
+      if (/izin|akses|login/.test(n)) return "fa-key";
+      if (/laporan|hasil|evaluasi/.test(n)) return "fa-chart-line";
+      if (/kontak|hubungi|email/.test(n)) return "fa-envelope";
+      if (/jadwal|kalender|agenda/.test(n)) return "fa-calendar";
+      if (/berita|pengumuman|informasi/.test(n)) return "fa-bullhorn";
+      if (/bantuan|panduan|tanya/.test(n)) return "fa-circle-info";
+      if (/profil|pengguna|akun/.test(n)) return "fa-user";
+      if (/link|tautan|situs/.test(n)) return "fa-link";
+      if (/sppd|perjalanan|dinas/.test(n)) return "fa-briefcase";
+      const f = ["fa-star", "fa-rocket", "fa-lightbulb", "fa-layer-group", "fa-heart", "fa-circle-check"];
+      return f[Math.floor(Math.random() * f.length)];
+    }
+
+    // Header
+    async function loadHeader() {
+      const s = await getDoc(doc(db, "users", tenant, "site_header", "main"));
+      if (s.exists()) {
+        const d = s.data();
+        mainTitle.value = d.mainTitle || "";
+        subTitle.value = d.subTitle || "";
+        if (d.logoUrl) {
+          logoPreview.src = d.logoUrl; logoPreview.style.display = "inline-block"; logoHint.style.display = "inline";
+        } else {
+          logoPreview.removeAttribute("src"); logoPreview.style.display = "none"; logoHint.style.display = "none";
+        }
+        const adminTopLogo = document.getElementById("adminTopLogo");
+        if (adminTopLogo) { adminTopLogo.src = (d.logoUrl && d.logoUrl.trim() !== "") ? d.logoUrl : "logo-default.png"; }
+      }
+    }
+
+    saveHeader.addEventListener("click", async () => {
+      try {
+        await setDoc(doc(db, "users", tenant, "site_header", "main"), {
+          mainTitle: mainTitle.value.trim(),
+          subTitle: subTitle.value.trim()
+        }, { merge: true });
+        showToast("Header disimpan", "success");
+      } catch (e) { showModal("Gagal menyimpan header: " + e.message, "error"); }
+    });
+
+    // CRUD Grid
+    async function loadGrid() {
+      const q = query(collection(db, "users", tenant, "grid_links"), orderBy("order", "asc"));
+      const snap = await getDocs(q);
+      listContainer.innerHTML = "";
+      snap.forEach(d => {
+        const data = d.data(); const id = d.id;
+        listContainer.insertAdjacentHTML("beforeend",
+          `<div class="grid-item" data-id="${id}">
+            <div><strong>${data.name}</strong></div>
+            <div class="actions">
+              <button data-edit="${id}"><i class="fas fa-edit"></i><span>Edit</span></button>
+              <button data-del="${id}"><i class="fas fa-trash"></i><span>Hapus</span></button>
+              <label title="Tampilkan di index">
+                <input type="checkbox" class="toggle" data-toggle="${id}" ${data.active !== false ? "checked" : ""}>
+              </label>
+              <span class="drag-handle" title="Geser untuk ubah urutan"><i class="fas fa-grip-vertical"></i></span>
+            </div>
+            <div class="url">${data.url}</div>
+          </div>`);
+      });
+      attachRowEvents(); enableDragSort();
+    }
+
+    function attachRowEvents() {
+      listContainer.querySelectorAll("[data-edit]").forEach(btn => {
+        btn.onclick = () => {
+          const id = btn.dataset.edit;
+          const item = btn.closest(".grid-item");
+          const name = item.querySelector("strong").textContent.trim();
+          const url = item.querySelector(".url").textContent.trim();
+          newName.value = name; newUrl.value = url; addBtn.textContent = "Simpan Perubahan"; editId = id;
+        };
+      });
+
+      listContainer.querySelectorAll("[data-del]").forEach(btn => {
+        btn.onclick = () => {
+          const id = btn.dataset.del;
+          showConfirm("Hapus link ini?", "warning", async () => {
+            try {
+              await deleteDoc(doc(db, "users", tenant, "grid_links", id));
+              const oldActions = toast.querySelector(".toast-actions"); if (oldActions) oldActions.remove();
+              showToast("Link dihapus", "success"); loadGrid();
+            } catch (e) { showModal("Gagal menghapus: " + e.message, "error"); }
+          });
+        };
+      });
+
+      listContainer.querySelectorAll("[data-toggle]").forEach(chk => {
+        chk.onchange = async () => {
+          const id = chk.dataset.toggle;
+          try {
+            await updateDoc(doc(db, "users", tenant, "grid_links", id), { active: chk.checked });
+            showToast(chk.checked ? "Diaktifkan" : "Dinonaktifkan", "success");
+          } catch (e) { showModal("Gagal update status: " + e.message, "error"); }
+        };
+      });
+    }
+
+    addBtn.addEventListener("click", async () => {
+      const name = newName.value.trim(); let url = newUrl.value.trim();
+      if (!name || !url) return showModal("Isi nama dan URL terlebih dahulu", "warning");
+      url = normalizeUrl(url); const icon = iconFromName(name);
+      try {
+        if (editId) {
+          await updateDoc(doc(db, "users", tenant, "grid_links", editId), { name, url, icon });
+          editId = null; addBtn.textContent = "Tambah Link"; showToast("Perubahan disimpan", "success");
+        } else {
+          const s = await getDocs(collection(db, "users", tenant, "grid_links"));
+          if (s.size >= 12) return showModal("Maksimal 12 link", "warning");
+          await addDoc(collection(db, "users", tenant, "grid_links"), { name, url, icon, order: s.size + 1, active: true });
+          showToast("Link ditambahkan", "success");
+        }
+        newName.value = ""; newUrl.value = ""; loadGrid();
+      } catch (e) { showModal("Operasi gagal: " + e.message, "error"); }
+    });
+
+    function enableDragSort() {
+      const items = [...listContainer.querySelectorAll(".grid-item")];
+      items.forEach(el => {
+        el.setAttribute("draggable", "true");
+        el.addEventListener("dragstart", e => { el.classList.add("dragging"); e.dataTransfer.effectAllowed = "move"; });
+        el.addEventListener("dragover", e => {
+          e.preventDefault(); const dragging = listContainer.querySelector(".dragging"); if (!dragging || dragging === el) return;
+          const rect = el.getBoundingClientRect(); const before = (e.clientY - rect.top) < rect.height / 2;
+          listContainer.insertBefore(dragging, before ? el : el.nextSibling);
+        });
+        el.addEventListener("dragend", () => { el.classList.remove("dragging"); persistOrder(); });
+      });
+    }
+
+    async function persistOrder() {
+      try {
+        const rows = [...listContainer.querySelectorAll(".grid-item")];
+        const batch = writeBatch(db);
+        rows.forEach((row, idx) => { batch.update(doc(db, "users", tenant, "grid_links", row.dataset.id), { order: idx + 1 }); });
+        await batch.commit(); showToast("Urutan disimpan", "success");
+      } catch (e) { showModal("Gagal menyimpan urutan: " + e.message, "error"); }
+    }
+
+    // Tekan Enter untuk login
+    loginSection.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); loginBtn.click(); }
+    });
+
+    // === Inisialisasi Auth & kontrol login/logout (IIFE) ===
+    (async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const hasTenant = urlParams.has("u");
+      const path = window.location.pathname;
+
+      await initFirebaseFromConfig();
+
+      // Logout otomatis jika /admin tanpa tenant
+      if (!hasTenant && path.includes("/admin")) {
+        try {
+          if (auth.currentUser) {
+            await signOut(auth);
+            console.log("🔒 Logout otomatis di halaman /admin (tanpa tenant)");
+          }
+        } catch (err) { console.warn("Gagal logout otomatis:", err); }
+      }
+
+      // Listener Auth
+      onAuthStateChanged(auth, async (user) => {
+        console.log("Auth state:", user ? "login" : "logout");
+        if (!user) {
+          loginSection.style.display = "block";
+          dashboard.style.display = "none";
+          title.textContent = "Admin Login";
+          return;
+        }
+
+        try {
+          const isSuperadmin = user.email === "admin@tommy.or.id" || user.email === "tommy@tommy.or.id";
+
+          // Cari tenant dari /admins
+          let tenantFound = null;
+          const adminsSnap = await getDocs(collection(db, "admins"));
+          for (const docSnap of adminsSnap.docs) {
+            const d = docSnap.data();
+            if (d.uid === user.uid) { tenantFound = docSnap.id; sessionStorage.setItem("lastTenant", tenantFound); break; }
+          }
+
+          if (!tenantFound) {
+            showModal(`🚫 Akun ${user.email} belum terdaftar sebagai admin tenant.`, "error", async () => {
+              await signOut(auth); location.href = "index.html";
+            });
+            return;
+          }
+
+          const params = new URLSearchParams(window.location.search);
+          if (!params.has("u")) {
+            window.location.replace(`admin.html?u=${tenantFound}`);
+            setTimeout(() => location.reload(), 400);
+            return;
+          }
+
+          const tenantParam = params.get("u");
+          if (!isSuperadmin && tenantParam !== tenantFound) {
+            showModal(`🚫 Akses ditolak untuk tenant @${tenantParam}.
+Akun Anda terdaftar di tenant @${tenantFound}.`, "error", async () => {
+              await signOut(auth); location.href = "index.html";
+            });
+            return;
+          }
+
+          // Tampilkan dashboard
+          loginSection.style.display = "none";
+          dashboard.style.display = "block";
+          title.textContent = `Link-Grid Admin @${tenantFound}`;
+
+          // URL & QR
+          const tenantUrlDiv = document.getElementById("tenantUrl");
+          const tenantLink = document.getElementById("tenantLink");
+          const tenantAdminLink = document.getElementById("tenantAdminLink");
+
+          const displayUrl = `https://link-gr.id/${tenantFound}`;
+          const actualUrl = `https://link-gr.id/?u=${tenantFound}`;
+          const displayAdminUrl = `https://link-gr.id/admin/${tenantFound}`;
+          const actualAdminUrl = `https://link-gr.id/admin.html?u=${tenantFound}`;
+
+          tenantLink.textContent = displayUrl; tenantLink.href = actualUrl;
+          tenantAdminLink.textContent = displayAdminUrl; tenantAdminLink.href = actualAdminUrl;
+          tenantUrlDiv.style.display = "block";
+
+          const qrCanvas = document.getElementById("tenantQrCanvas");
+          const downloadQrBtn = document.getElementById("downloadQrBtn");
+
+          async function generateTenantQr() {
+            if (!qrCanvas || !tenantLink.href) return;
+            const isDark = document.body.classList.contains("dark-mode");
+            const bgColor = isDark ? "#1e1e1e" : "#ffffff";
+            const qrColor = isDark ? "#ffffff" : "#000000";
+            const ctx = qrCanvas.getContext("2d");
+            ctx.clearRect(0, 0, qrCanvas.width, qrCanvas.height);
+
+            await QRCode.toCanvas(qrCanvas, tenantLink.href, {
+              width: 160, margin: 1, color: { dark: qrColor, light: bgColor },
+            });
+
+            const logo = new Image(); logo.src = "logo-default.png";
+            logo.onload = () => {
+              const size = 36; const x = (qrCanvas.width - size) / 2; const y = (qrCanvas.height - size) / 2;
+              ctx.save(); ctx.beginPath(); ctx.roundRect(x - 3, y - 3, size + 6, size + 6, 6); ctx.fillStyle = bgColor; ctx.fill(); ctx.restore();
+              ctx.drawImage(logo, x, y, size, size);
+            };
+          }
+
+          await generateTenantQr();
+          downloadQrBtn.onclick = () => {
+            const a = document.createElement("a");
+            a.href = qrCanvas.toDataURL("image/png");
+            a.download = `qr-${tenantFound}.png`;
+            a.click();
+          };
+          themeSwitcher.addEventListener("click", async () => {
+            setTimeout(generateTenantQr, 200);
+          });
+
+          showToast(`Login sebagai ${user.email}`, "success");
+          await loadHeader();
+          await loadGrid();
+          setTimeout(generateTenantQr, 500);
+
+        } catch (err) {
+          console.error("Auth verification error:", err);
+          showModal("Gagal memverifikasi hak akses.", "error", async () => { await signOut(auth); });
+        }
+      });
+
+      // Logout
+      logoutBtn.addEventListener("click", async () => {
+        await signOut(auth);
+        sessionStorage.removeItem("lastTenant");
+        localStorage.clear();
+        window.location.href = "index.html";
+      });
+
+      // Upload Logo (Cloudinary)
+      function validateLogoFile(file) {
+        if (!file) { showModal("Pilih file gambar terlebih dahulu"); return false; }
+        const okType = /image\/(png|jpeg|jpg|webp)/i.test(file.type);
+        if (!okType) { showModal("Format harus PNG/JPG/WebP"); return false; }
+        const MAX = 1.5 * 1024 * 1024;
+        if (file.size > MAX) { showModal("Ukuran maks 1.5MB"); return false; }
+        return true;
+      }
+
+      async function uploadToCloudinary(file) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("upload_preset", UPLOAD_PRESET);
+        formData.append("folder", CLOUD_FOLDER);
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: "POST", body: formData });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      }
+
+      uploadLogo.addEventListener("click", async () => {
+        const file = logoUpload.files?.[0];
+        if (!validateLogoFile(file)) return;
+        try {
+          showToast("Mengunggah logo...");
+          const data = await uploadToCloudinary(file);
+          if (!data.secure_url) throw new Error("Tidak ada secure_url dari Cloudinary");
+
+          await setDoc(doc(db, "users", tenant, "site_header", "main"), {
+            logoUrl: data.secure_url, logoPublicId: data.public_id || null
+          }, { merge: true });
+
+          logoPreview.src = data.secure_url;
+          logoPreview.style.display = "inline-block";
+          logoHint.style.display = "inline";
+          logoUpload.value = "";
+          showToast("Logo berhasil diunggah", "success");
+        } catch (e) { showModal("Upload gagal: " + e.message, "error"); }
+      });
+
+      resetLogo.addEventListener("click", async () => {
+        showConfirm("Reset logo ke default?", "warning", async () => {
+          try {
+            await setDoc(doc(db, "users", tenant, "site_header", "main"), { logoUrl: null }, { merge: true });
+            logoPreview.removeAttribute("src"); logoPreview.style.display = "none";
+            logoHint.style.display = "none"; logoUpload.value = "";
+            const oldActions = toast.querySelector(".toast-actions"); if (oldActions) oldActions.remove();
+            showToast("Logo direset", "success", 2000);
+          } catch (e) { showModal("Gagal reset logo: " + e.message, "error"); }
+        });
+      });
+
+      // Theme toggle (UI)
+      themeSwitcher.addEventListener("click", () => {
+        body.classList.toggle("dark-mode");
+        themeIcon.classList.toggle("fa-moon");
+        themeIcon.classList.toggle("fa-sun");
+      });
+    })();
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Pengumuman</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #f4f7f9;
+      color: #1a202c;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      box-shadow: 0 6px 25px rgba(0,0,0,.05);
+      padding: 30px;
+      width: 100%;
+      max-width: 480px;
+    }
+    h2 { text-align: center; color: #3182ce; margin-top: 0; }
+    label { display: block; font-size: .9em; color: #4a5568; margin-bottom: 4px; margin-top: 12px; text-align: left; }
+    input, textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #cbd5e0;
+      border-radius: 10px;
+      font-size: .95em;
+      margin-bottom: 10px;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+    textarea { resize: vertical; min-height: 120px; }
+    button {
+      width: 100%; padding: 12px;
+      border: none; border-radius: 10px;
+      cursor: pointer; transition: .3s;
+      font-size: 1em;
+    }
+    #simpanBtn { background: #3182ce; color: #fff; }
+    #simpanBtn:hover { background: #2563eb; }
+    #logoutBtn { background: #e2e8f0; color: #1a202c; margin-top: 8px; }
+    #tambahBtn {
+      background: #3182ce; color: #fff;
+      margin-top: 18px;
+    }
+    #tambahBtn:hover { background: #2563eb; }
+    .newForm {
+      border-top: 1px solid #e2e8f0;
+      margin-top: 20px;
+      padding-top: 20px;
+      display: none;
+    }
+    ul { list-style: none; padding: 0; margin-top: 20px; font-size: .9em; }
+    li { padding: 8px 0; border-bottom: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 4px; }
+    .btn-group { display: flex; gap: 8px; margin-top: 4px; }
+    .mini-btn {
+      flex: 1; padding: 6px; border-radius: 8px; border: none;
+      font-size: .85em; cursor: pointer; transition: .2s;
+    }
+    .edit-btn { background: #3182ce; color: #fff; }
+    .edit-btn:hover { background: #2563eb; }
+    .delete-btn { background: #e53e3e; color: #fff; }
+    .delete-btn:hover { background: #c53030; }
+    #detailPengumuman {
+      margin-top: 20px;
+      font-size: .9em;
+      line-height: 1.6;
+      color: #2d3748;
+      display: none;
+      word-wrap: break-word;
+      overflow-wrap: anywhere;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h2>Admin Pengumuman</h2>
+
+    <!-- login -->
+    <div id="loginSection">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="admin@tommy.or.id">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="••••••••">
+      <button id="loginBtn">Login</button>
+    </div>
+
+    <!-- form utama -->
+    <div id="formSection" style="display:none;">
+      <div id="newForm" class="newForm">
+        <label>Judul Pengumuman</label>
+        <input type="text" id="judul" placeholder="Nama Pengumuman">
+        <label>Isi Pengumuman</label>
+        <textarea id="isi" placeholder="Tuliskan isi pengumuman..."></textarea>
+        <button id="simpanBtn">Simpan Pengumuman</button>
+      </div>
+
+      <button id="logoutBtn">Keluar</button>
+      <button id="tambahBtn">Tambah Pengumuman</button>
+
+      <ul id="daftarPengumuman"></ul>
+      <div id="detailPengumuman"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+    import {
+      getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
+    } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+    import {
+      getFirestore, collection, addDoc, getDocs, orderBy, query,
+      serverTimestamp, doc, deleteDoc, updateDoc, getDoc
+    } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCP2dnXfeRR57NNYarJSYtBDjve8K-bOd8",
+      authDomain: "linktree-wannabe.firebaseapp.com",
+      projectId: "linktree-wannabe",
+      storageBucket: "linktree-wannabe.firebasestorage.app",
+      messagingSenderId: "246673617043",
+      appId: "1:246673617043:web:573d5386df8b29c945dd66"
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    const loginSection = document.getElementById("loginSection");
+    const formSection = document.getElementById("formSection");
+    const daftar = document.getElementById("daftarPengumuman");
+    const newForm = document.getElementById("newForm");
+    const tambahBtn = document.getElementById("tambahBtn");
+    const detailBox = document.getElementById("detailPengumuman");
+    let editId = null;
+
+    tambahBtn.addEventListener("click", () => {
+      newForm.style.display = newForm.style.display === "none" ? "block" : "none";
+      if (newForm.style.display === "block") newForm.scrollIntoView({ behavior: "smooth" });
+    });
+
+    document.getElementById("loginBtn").addEventListener("click", async () => {
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+      } catch (err) {
+        alert("Login gagal: " + err.message);
+      }
+    });
+
+    onAuthStateChanged(auth, async user => {
+      if (user && user.email === "admin@tommy.or.id") {
+        loginSection.style.display = "none";
+        formSection.style.display = "block";
+        loadAnnouncements();
+      } else {
+        loginSection.style.display = "block";
+        formSection.style.display = "none";
+      }
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", () => signOut(auth));
+
+    document.getElementById("simpanBtn").addEventListener("click", async () => {
+      const judul = document.getElementById("judul").value.trim();
+      const isi = document.getElementById("isi").value.trim();
+      if (!judul || !isi) return alert("Lengkapi semua kolom!");
+
+      try {
+        if (editId) {
+          await updateDoc(doc(db, "announcements", editId), { judul, isi });
+          alert("✏️ Pengumuman diperbarui!");
+          editId = null;
+        } else {
+          await addDoc(collection(db, "announcements"), {
+            judul, isi, createdAt: serverTimestamp()
+          });
+          alert("✅ Pengumuman baru disimpan!");
+        }
+
+        document.getElementById("judul").value = "";
+        document.getElementById("isi").value = "";
+        newForm.style.display = "none";
+        loadAnnouncements();
+      } catch (e) {
+        alert("Gagal menyimpan: " + e.message);
+      }
+    });
+
+    async function loadAnnouncements() {
+      daftar.innerHTML = "";
+      const q = query(collection(db, "announcements"), orderBy("createdAt", "desc"));
+      const snap = await getDocs(q);
+      if (snap.empty) {
+        daftar.innerHTML = "<li><em>Belum ada pengumuman.</em></li>";
+        return;
+      }
+
+      snap.forEach(d => {
+        const data = d.data();
+        const id = d.id;
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <strong>${data.judul}</strong>
+          <div class="btn-group">
+            <button class="mini-btn edit-btn">Edit</button>
+            <button class="mini-btn delete-btn">Hapus</button>
+            <button class="mini-btn" style="background:#e2e8f0;color:#1a202c;">Lihat</button>
+          </div>
+        `;
+        const [editBtn, delBtn, lihatBtn] = li.querySelectorAll("button");
+
+        editBtn.onclick = () => {
+          document.getElementById("judul").value = data.judul;
+          document.getElementById("isi").value = data.isi;
+          newForm.style.display = "block";
+          editId = id;
+        };
+
+        delBtn.onclick = async () => {
+          if (confirm("Hapus pengumuman ini?")) {
+            await deleteDoc(doc(db, "announcements", id));
+            alert("🗑️ Dihapus!");
+            loadAnnouncements();
+          }
+        };
+
+        lihatBtn.onclick = () => showDetail(id);
+        daftar.appendChild(li);
+      });
+    }
+
+    async function showDetail(id) {
+      const ref = doc(db, "announcements", id);
+      const snap = await getDoc(ref);
+      if (!snap.exists()) return;
+      const d = snap.data();
+      const isiDenganLink = (d.isi || "").replace(
+        /(https?:\/\/[^\s]+)/g,
+        '<a href="$1" target="_blank" style="color:#3182ce;text-decoration:underline;">$1</a>'
+      );
+      detailBox.innerHTML = `
+        <hr>
+        <h3 style="color:#3182ce;margin-bottom:4px;">${d.judul}</h3>
+        <div>${isiDenganLink.replace(/\n/g, "<br>")}</div>
+      `;
+      detailBox.style.display = "block";
+      detailBox.scrollIntoView({ behavior: "smooth" });
+    }
+  </script>
+</body>
+</html>

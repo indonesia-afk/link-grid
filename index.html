@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Link-Grid by @TOMMY</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --transition: .3s;
+      --radius: 16px;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #f4f7f9;
+      color: #1a202c;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+      transition: background var(--transition), color var(--transition);
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      box-shadow: 0 6px 25px rgba(0, 0, 0, .05);
+      padding: 30px;
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      position: relative;
+    }
+
+    #theme-switcher {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: #e2e8f0;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      font-size: 18px;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+    }
+
+    /* ===== Logo ATAS (dinamis dari Firestore, responsif) ===== */
+    .logo-top {
+      margin: 0 0 16px 0;
+      text-align: center;
+    }
+
+    .logo-img-top {
+      width: auto;
+      height: auto;
+      max-width: 220px;
+      /* batas lebar maksimum */
+      max-height: 140px;
+      /* batas tinggi maksimum (desktop) */
+      object-fit: contain;
+      display: inline-block;
+      transition: transform 0.3s ease, opacity 0.3s ease;
+      opacity: 0.98;
+    }
+
+    @media (max-width: 500px) {
+      .logo-img-top {
+        max-width: 160px;
+        /* sedikit lebih kecil di mobile */
+        max-height: 100px;
+        /* tinggi maksimum turun */
+      }
+    }
+
+    .logo-img-top:hover {
+      transform: scale(1.04);
+      opacity: 1;
+    }
+
+    .title {
+      font-size: 1.6em;
+      font-weight: 700;
+      margin: 0;
+      line-height: 1.3;
+    }
+
+    .description {
+      font-size: .95em;
+      color: #718096;
+      margin: 8px 0 10px 0;
+      line-height: 1.4;
+      white-space: pre-line;
+    }
+
+    .info-text {
+      display: none;
+      font-size: .75em;
+      color: #a0aec0;
+      margin-bottom: 15px;
+    }
+
+    .icon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+    }
+
+    .grid-item {
+      background: #fff;
+      color: #2d3748;
+      text-decoration: none;
+      padding: 15px;
+      border-radius: 14px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, .05);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      aspect-ratio: 1/1;
+      transition: all .2s ease-in-out;
+    }
+
+    .grid-item:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, .08);
+    }
+
+    .grid-item i {
+      font-size: 2em;
+      color: #4a5568;
+    }
+
+    .grid-item span {
+      font-weight: 500;
+      font-size: .9em;
+      line-height: 1.25;
+      text-align: center;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      word-break: break-word;
+      max-width: 95%;
+      transition: all .3s ease;
+    }
+
+    @media(max-width:600px) {
+      .grid-item span {
+        -webkit-line-clamp: 4;
+        line-clamp: 4;
+      }
+    }
+
+    @media(hover:hover) {
+      .grid-item:hover span {
+        -webkit-line-clamp: unset;
+        line-clamp: unset;
+        overflow: visible;
+        background: rgba(255, 255, 255, 0.95);
+        position: relative;
+        z-index: 2;
+        border-radius: 6px;
+        padding: 2px 4px;
+      }
+    }
+
+    /* ===== Logo BAWAH (tetap/legacy dekat footer) ===== */
+    .logo-image {
+      margin-top: 36px;
+      text-align: center;
+    }
+
+    .logo-img-card {
+      width: 100%;
+      max-width: 125px;
+      height: auto;
+      object-fit: contain;
+      display: inline-block;
+      opacity: .9;
+      transition: transform .3s ease, opacity .3s ease;
+    }
+
+    .logo-img-card:hover {
+      transform: scale(1.15);
+      opacity: 1;
+    }
+
+    footer {
+      margin-top: 1px;
+      font-size: .9em;
+      color: #a0aec0;
+    }
+
+    footer a {
+      color: #3182ce;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Dark mode */
+    body.dark-mode {
+      background: #121212;
+      color: #e2e8f0;
+    }
+
+    body.dark-mode .card {
+      background: #1e1e1e;
+      border-color: #333;
+    }
+
+    body.dark-mode .grid-item {
+      background: #1e1e1e;
+      color: #e2e8f0;
+      border-color: #333;
+    }
+
+    body.dark-mode .grid-item i {
+      color: #a0aec0;
+    }
+
+    body.dark-mode #theme-switcher {
+      background: #2a2a2a;
+      color: #fff;
+    }
+
+    body.dark-mode .logo-img-top,
+    body.dark-mode .logo-img-card {
+      filter: brightness(1.08) contrast(1.05);
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 255, 255, 0.95);
+      color: #1a202c;
+      border-radius: 14px;
+      padding: 14px 18px;
+      box-shadow: 0 6px 25px rgba(0, 0, 0, .15);
+      backdrop-filter: blur(8px);
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity .3s ease, visibility .3s ease;
+      text-align: center;
+      z-index: 10000;
+      min-width: 220px;
+    }
+
+    .toast.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .toast-btn {
+      margin-top: 10px;
+      background: #3182ce;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 16px;
+      cursor: pointer;
+    }
+
+    body.dark-mode .toast {
+      background: rgba(30, 30, 30, 0.9);
+      color: #e2e8f0;
+    }
+
+    body.dark-mode .grid-item:hover span {
+      background: rgba(34, 34, 34, 0.95);
+      color: #fff;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <button id="theme-switcher"><i class="fas fa-moon"></i></button>
+
+    <!-- LOGO ATAS (dinamis dari Firestore) -->
+    <div class="logo-top">
+      <img src="logo-header.png" alt="Logo Atas" class="logo-img-top" id="topLogo">
+    </div>
+
+    <h1 id="mainTitle" class="title">LINK-GRID by @TOMMY</h1>
+    <p id="subTitle" class="description">Powered by https://espeje.com</p>
+    <p id="infoText" class="info-text"></p>
+    <div id="gridContainer" class="icon-grid"></div>
+
+    <!-- LOGO BAWAH (tetap, klik menuju espeje.com) -->
+    <div class="logo-image">
+      <a href="https://espeje.com" target="_blank" rel="noopener noreferrer">
+        <img src="logo-header.png" alt="Logo Portal" class="logo-img-card">
+      </a>
+    </div>
+
+    <footer>
+      <a href="https://link-gr.id/home" target="_blank">Link-Grid </a>by @TOMMY<br>
+      Powered by <a href="https://espeje.com" target="_blank">https://espeje.com</a><br>
+    </footer>
+  </div>
+
+  <div id="toast" class="toast">
+    <div id="toastMsg"></div>
+    <button id="toastBtn" class="toast-btn" style="display:none;">OK</button>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, orderBy, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+    // === 1. Bootloader Konfigurasi dari Netlify ===
+    const CONFIG_URL = "https://netlify-linktree.netlify.app/.netlify/functions/get-config";
+    window.__configReady = (async function loadConfig() {
+      try {
+        const res = await fetch(CONFIG_URL);
+        if (!res.ok) throw new Error("Config fetch failed " + res.status);
+        const cfg = await res.json();
+        window.APP_CONFIG = cfg;
+        return cfg;
+      } catch (e) {
+        console.error("Gagal memuat konfigurasi:", e);
+        alert("Gagal memuat konfigurasi aplikasi. Silakan muat ulang halaman.");
+        throw e;
+      }
+    })();
+
+    // === 2. Inisialisasi Firebase secara dinamis ===
+    let app, db;
+    async function initFirebaseFromConfig() {
+      if (db) return db; // kalau sudah diinisialisasi
+      const { firebase } = await window.__configReady;
+      app = initializeApp(firebase);
+      db = getFirestore(app);
+      window.db = db;
+      window.firebaseApp = app;
+      console.log("✅ Firebase inisialisasi selesai");
+      return db;
+    }
+
+    // === 3. Tenant autodetect ===
+    let tenant = "tommy";
+    function detectTenant() {
+      const params = new URLSearchParams(window.location.search);
+      const q = params.get("u");
+      return q ? q.toLowerCase() : "tommy";
+    }
+    tenant = detectTenant();
+    console.log("Tenant aktif:", tenant);
+
+    // === 4. Elemen DOM & Toast ===
+    const mainTitle = document.getElementById("mainTitle");
+    const subTitle = document.getElementById("subTitle");
+    const gridContainer = document.getElementById("gridContainer");
+    const infoText = document.getElementById("infoText");
+    const topLogo = document.getElementById("topLogo");
+
+    const toast = document.getElementById("toast"),
+      toastMsg = document.getElementById("toastMsg"),
+      toastBtn = document.getElementById("toastBtn");
+    let toastTimer = null;
+    function hideToast() { toast.classList.remove("show"); toastBtn.style.display = "none"; clearTimeout(toastTimer); }
+    function showToast(msg, type = "info", ms = 2000) { toastMsg.textContent = msg; toastBtn.style.display = "none"; toast.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(hideToast, ms); }
+
+    // === 5. ICON helper (tidak diubah) ===
+    const ICON_GROUPS = {
+      dokumen: ["fa-file-alt", "fa-file-lines", "fa-file-contract", "fa-file-word", "fa-file-circle-check"],
+      pdf: ["fa-file-pdf", "fa-file-invoice"],
+      formulir: ["fa-clipboard-list", "fa-list-check", "fa-square-check"],
+      video: ["fa-video", "fa-photo-film", "fa-play-circle"],
+      akses: ["fa-key", "fa-lock", "fa-unlock-keyhole"],
+      laporan: ["fa-chart-line", "fa-chart-pie"],
+      kontak: ["fa-envelope", "fa-paper-plane", "fa-address-card"],
+      jadwal: ["fa-calendar", "fa-calendar-check"],
+      berita: ["fa-bullhorn", "fa-newspaper"],
+      info: ["fa-circle-info", "fa-question-circle"],
+      profil: ["fa-user", "fa-id-card"],
+      link: ["fa-link", "fa-share-nodes", "fa-globe"],
+      sppd: ["fa-briefcase", "fa-suitcase-rolling", "fa-route"],
+      misc: ["fa-star", "fa-rocket", "fa-lightbulb", "fa-layer-group", "fa-heart", "fa-circle-check"]
+    };
+    const usedIcons = new Set(), MASTER_POOL = [...new Set(Object.values(ICON_GROUPS).flat())];
+    function takeUniqueFrom(arr) { for (const ic of arr) { if (!usedIcons.has(ic)) { usedIcons.add(ic); return ic; } } const rest = MASTER_POOL.filter(ic => !usedIcons.has(ic)); if (rest.length) { const ic = rest[Math.floor(Math.random() * rest.length)]; usedIcons.add(ic); return ic; } return arr[0]; }
+    function iconFromName(name) {
+      const n = (name || "").toLowerCase();
+      if (/(pdf|unduhan|download)/.test(n)) return takeUniqueFrom(ICON_GROUPS.pdf);
+      if (/(dokumen|arsip|berkas|file)/.test(n)) return takeUniqueFrom(ICON_GROUPS.dokumen);
+      if (/(formulir|pendaftaran|input)/.test(n)) return takeUniqueFrom(ICON_GROUPS.formulir);
+      if (/(tutorial|panduan|video|youtube)/.test(n)) return takeUniqueFrom(ICON_GROUPS.video);
+      if (/(izin|akses|login)/.test(n)) return takeUniqueFrom(ICON_GROUPS.akses);
+      if (/(laporan|hasil|evaluasi)/.test(n)) return takeUniqueFrom(ICON_GROUPS.laporan);
+      if (/(kontak|hubungi|email)/.test(n)) return takeUniqueFrom(ICON_GROUPS.kontak);
+      if (/(jadwal|kalender|agenda)/.test(n)) return takeUniqueFrom(ICON_GROUPS.jadwal);
+      if (/(berita|pengumuman|informasi)/.test(n)) return takeUniqueFrom(ICON_GROUPS.berita);
+      if (/(bantuan|panduan|tanya)/.test(n)) return takeUniqueFrom(ICON_GROUPS.info);
+      if (/(profil|pengguna|akun)/.test(n)) return takeUniqueFrom(ICON_GROUPS.profil);
+      if (/(link|tautan|situs)/.test(n)) return takeUniqueFrom(ICON_GROUPS.link);
+      if (/(sppd|perjalanan|dinas)/.test(n)) return takeUniqueFrom(ICON_GROUPS.sppd);
+      return takeUniqueFrom(ICON_GROUPS.misc);
+    }
+
+    function autoResizeText(span) {
+      let size = 16; span.style.fontSize = size + "px";
+      const box = span.parentElement, maxW = box.clientWidth * 0.9, maxH = box.clientHeight * 0.4;
+      while ((span.scrollWidth > maxW || span.scrollHeight > maxH) && size > 10) { size -= 1; span.style.fontSize = size + "px"; }
+      if (span.scrollHeight > maxH * 1.1) { span.title = span.textContent; }
+    }
+
+    // === 6. Fungsi utama (loadHeader + loadGrid) ===
+    async function loadHeader() {
+      const db = await initFirebaseFromConfig();
+      try {
+        const snap = await getDoc(doc(db, "users", tenant, "site_header", "main"));
+        if (!snap.exists()) {
+          console.warn(`User @${tenant} tidak ditemukan — alihkan ke @tommy`);
+          if (tenant !== "tommy") {
+            showToast(`User @${tenant} tidak ditemukan. Dialihkan ke halaman utama...`, "warning", 2500);
+            setTimeout(() => { window.location.href = "?u=tommy"; }, 2500);
+            return;
+          }
+        }
+        const d = snap.data();
+        mainTitle.textContent = d.mainTitle || "LINK-GRID by @TOMMY";
+        subTitle.textContent = d.subTitle || "Powered by https://espeje.com";
+        if (topLogo) topLogo.src = d.logoUrl?.trim() ? d.logoUrl : "logo-default.png";
+      } catch (e) {
+        console.error("Gagal memuat header:", e);
+        if (tenant !== "tommy") {
+          showToast(`Gagal memuat tenant @${tenant}. Kembali ke utama...`, "error", 2000);
+          setTimeout(() => { window.location.href = "?u=tommy"; }, 2000);
+        }
+      }
+    }
+
+    async function loadGrid() {
+      const db = await initFirebaseFromConfig();
+      const q = query(collection(db, "users", tenant, "grid_links"), orderBy("order", "asc"));
+      const snapshot = await getDocs(q);
+      gridContainer.innerHTML = ""; usedIcons.clear();
+      if (snapshot.empty) { infoText.style.display = "none"; return; }
+      infoText.style.display = "block"; let count = 0;
+      snapshot.forEach(docSnap => {
+        const d = docSnap.data();
+        if (d.active === false) return; if (count >= 12) return;
+        const icon = d.icon ? (usedIcons.has(d.icon) ? iconFromName(d.name) : (usedIcons.add(d.icon), d.icon)) : iconFromName(d.name);
+        gridContainer.insertAdjacentHTML("beforeend", `
+        <a href="${d.url}" target="_blank" rel="noopener noreferrer" class="grid-item">
+          <i class="fas ${icon}"></i><span>${d.name}</span>
+        </a>`);
+        const span = gridContainer.lastElementChild.querySelector("span");
+        autoResizeText(span); count++;
+      });
+      enableTapReveal();
+    }
+
+    function enableTapReveal() {
+      if (window.matchMedia("(hover: none)").matches) {
+        gridContainer.addEventListener("click", e => {
+          const card = e.target.closest(".grid-item"); if (!card) return;
+          const span = card.querySelector("span"); if (!span) return;
+          span.style.webkitLineClamp = "unset"; span.style.overflow = "visible";
+          setTimeout(() => { span.style.webkitLineClamp = "4"; span.style.overflow = "hidden"; }, 2500);
+        });
+      }
+    }
+
+    // === 7. Jalankan saat halaman siap ===
+    document.addEventListener("DOMContentLoaded", async () => {
+      await initFirebaseFromConfig();
+      await loadHeader();
+      await loadGrid();
+    });
+
+    // === 8. Theme toggle (tidak diubah) ===
+    const themeSwitcher = document.getElementById("theme-switcher");
+    const body = document.body;
+    const themeIcon = themeSwitcher.querySelector("i");
+    themeSwitcher.addEventListener("click", () => {
+      body.classList.toggle("dark-mode");
+      themeIcon.classList.toggle("fa-moon");
+      themeIcon.classList.toggle("fa-sun");
+    });
+  </script>
+
+</body>
+
+
+</html>
