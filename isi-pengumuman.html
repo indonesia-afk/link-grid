@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Pengumuman</title>
+  <title>Info & Pengumuman</title>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     body {
@@ -17,18 +18,34 @@
       margin: 0;
       padding: 20px;
     }
+
     .card {
       background: #fff;
       border: 1px solid #e2e8f0;
       border-radius: 20px;
-      box-shadow: 0 6px 25px rgba(0,0,0,.05);
+      box-shadow: 0 6px 25px rgba(0, 0, 0, .05);
       padding: 30px;
       width: 100%;
       max-width: 480px;
     }
-    h2 { text-align: center; color: #3182ce; margin-top: 0; }
-    label { display: block; font-size: .9em; color: #4a5568; margin-bottom: 4px; margin-top: 12px; text-align: left; }
-    input, textarea {
+
+    h2 {
+      text-align: center;
+      color: #3182ce;
+      margin-top: 0;
+    }
+
+    label {
+      display: block;
+      font-size: .9em;
+      color: #4a5568;
+      margin-bottom: 4px;
+      margin-top: 12px;
+      text-align: left;
+    }
+
+    input,
+    textarea {
       width: 100%;
       padding: 12px;
       border: 1px solid #cbd5e0;
@@ -38,38 +55,103 @@
       font-family: inherit;
       box-sizing: border-box;
     }
-    textarea { resize: vertical; min-height: 120px; }
+
+    textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
     button {
-      width: 100%; padding: 12px;
-      border: none; border-radius: 10px;
-      cursor: pointer; transition: .3s;
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: .3s;
       font-size: 1em;
     }
-    #simpanBtn { background: #3182ce; color: #fff; }
-    #simpanBtn:hover { background: #2563eb; }
-    #logoutBtn { background: #e2e8f0; color: #1a202c; margin-top: 8px; }
+
+    #simpanBtn {
+      background: #3182ce;
+      color: #fff;
+    }
+
+    #simpanBtn:hover {
+      background: #2563eb;
+    }
+
+    #logoutBtn {
+      background: #e2e8f0;
+      color: #1a202c;
+      margin-top: 8px;
+    }
+
     #tambahBtn {
-      background: #3182ce; color: #fff;
+      background: #3182ce;
+      color: #fff;
       margin-top: 18px;
     }
-    #tambahBtn:hover { background: #2563eb; }
+
+    #tambahBtn:hover {
+      background: #2563eb;
+    }
+
     .newForm {
       border-top: 1px solid #e2e8f0;
       margin-top: 20px;
       padding-top: 20px;
       display: none;
     }
-    ul { list-style: none; padding: 0; margin-top: 20px; font-size: .9em; }
-    li { padding: 8px 0; border-bottom: 1px solid #e2e8f0; display: flex; flex-direction: column; gap: 4px; }
-    .btn-group { display: flex; gap: 8px; margin-top: 4px; }
-    .mini-btn {
-      flex: 1; padding: 6px; border-radius: 8px; border: none;
-      font-size: .85em; cursor: pointer; transition: .2s;
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+      font-size: .9em;
     }
-    .edit-btn { background: #3182ce; color: #fff; }
-    .edit-btn:hover { background: #2563eb; }
-    .delete-btn { background: #e53e3e; color: #fff; }
-    .delete-btn:hover { background: #c53030; }
+
+    li {
+      padding: 8px 0;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .mini-btn {
+      flex: 1;
+      padding: 6px;
+      border-radius: 8px;
+      border: none;
+      font-size: .85em;
+      cursor: pointer;
+      transition: .2s;
+    }
+
+    .edit-btn {
+      background: #3182ce;
+      color: #fff;
+    }
+
+    .edit-btn:hover {
+      background: #2563eb;
+    }
+
+    .delete-btn {
+      background: #e53e3e;
+      color: #fff;
+    }
+
+    .delete-btn:hover {
+      background: #c53030;
+    }
+
     #detailPengumuman {
       margin-top: 20px;
       font-size: .9em;
@@ -115,25 +197,39 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-    import {
-      getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
-    } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
     import {
       getFirestore, collection, addDoc, getDocs, orderBy, query,
       serverTimestamp, doc, deleteDoc, updateDoc, getDoc
     } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyCP2dnXfeRR57NNYarJSYtBDjve8K-bOd8",
-      authDomain: "linktree-wannabe.firebaseapp.com",
-      projectId: "linktree-wannabe",
-      storageBucket: "linktree-wannabe.firebasestorage.app",
-      messagingSenderId: "246673617043",
-      appId: "1:246673617043:web:573d5386df8b29c945dd66"
-    };
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+    // === Ambil konfigurasi dari Netlify ===
+    const CONFIG_URL = "https://netlify-linktree.netlify.app/.netlify/functions/get-config";
+    window.__configReady = (async () => {
+      try {
+        const res = await fetch(CONFIG_URL);
+        if (!res.ok) throw new Error("Config fetch failed " + res.status);
+        const cfg = await res.json();
+        window.APP_CONFIG = cfg;
+        return cfg;
+      } catch (e) {
+        console.error("Gagal memuat konfigurasi:", e);
+        alert("Gagal memuat konfigurasi aplikasi. Silakan muat ulang halaman.");
+        throw e;
+      }
+    })();
+
+    // === Inisialisasi Firebase dari config Netlify ===
+    let app, auth, db;
+    async function initFirebaseFromConfig() {
+      if (db) return db;
+      const { firebase } = await window.__configReady;
+      app = initializeApp(firebase);
+      auth = getAuth(app);
+      db = getFirestore(app);
+      return db;
+    }
+    await initFirebaseFromConfig();
 
     const loginSection = document.getElementById("loginSection");
     const formSection = document.getElementById("formSection");

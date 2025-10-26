@@ -240,7 +240,6 @@
       app = initializeApp(firebase);
       auth = getAuth(app);
       db = getFirestore(app);
-      console.log("✅ Firebase inisialisasi selesai (super-admin)");
       return db;
     }
     await initFirebaseFromConfig();

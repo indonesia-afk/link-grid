@@ -352,7 +352,6 @@
       db = getFirestore(app);
       window.db = db;
       window.firebaseApp = app;
-      console.log("✅ Firebase inisialisasi selesai");
       return db;
     }
 
@@ -364,7 +363,6 @@
       return q ? q.toLowerCase() : "tommy";
     }
     tenant = detectTenant();
-    console.log("Tenant aktif:", tenant);
 
     // === 4. Elemen DOM & Toast ===
     const mainTitle = document.getElementById("mainTitle");

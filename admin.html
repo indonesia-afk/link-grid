@@ -598,8 +598,6 @@
       if (db) return db;
       const { firebase } = await window.__configReady;
 
-      console.log("🔥 Firebase config diterima:", firebase);
-
       // Validasi sebelum inisialisasi
       if (!firebase.apiKey || !firebase.authDomain) {
         alert("Config Firebase tidak valid! apiKey kosong.");
@@ -611,7 +609,6 @@
         app = initializeApp(firebase);
         auth = getAuth(app);
         db = getFirestore(app);
-        console.log("✅ Firebase inisialisasi selesai pada domain:", window.location.origin);
       } catch (err) {
         console.error("❌ Gagal inisialisasi Firebase:", err);
         alert("Gagal inisialisasi Firebase: " + err.message);
@@ -629,13 +626,11 @@
       return q ? q.toLowerCase() : "tommy";
     }
     tenant = detectTenant();
-    console.log("Admin tenant:", tenant);
 
     window.addEventListener("popstate", async () => {
       const newTenant = detectTenant();
       if (newTenant !== tenant) {
         tenant = newTenant;
-        console.log("🔄 Tenant berganti:", tenant);
         await loadHeader();
         await loadGrid();
       }
@@ -854,7 +849,6 @@
       e.preventDefault();
       try {
         const userCred = await signInWithEmailAndPassword(auth, email.value, password.value);
-        console.log("✅ Login berhasil:", userCred.user.email);
       } catch (err) {
         console.error("❌ Login gagal:", err.code, err.message);
         showModal("Login gagal: " + err.code);
@@ -874,14 +868,12 @@
         try {
           if (auth.currentUser) {
             await signOut(auth);
-            console.log("🔒 Logout otomatis di halaman /admin (tanpa tenant)");
           }
         } catch (err) { console.warn("Gagal logout otomatis:", err); }
       }
 
       // Listener Auth
       onAuthStateChanged(auth, async (user) => {
-        console.log("Auth state:", user ? "login" : "logout");
         if (!user) {
           loginSection.style.display = "block";
           dashboard.style.display = "none";
