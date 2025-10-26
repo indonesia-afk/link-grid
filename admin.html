@@ -597,13 +597,31 @@
     import { getIdTokenResult } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 
     let app, auth, db;
+
     async function initFirebaseFromConfig() {
       if (db) return db;
       const { firebase } = await window.__configReady;
-      app = initializeApp(firebase);
-      auth = getAuth(app);
-      db = getFirestore(app);
-      console.log("✅ Firebase inisialisasi selesai");
+
+      console.log("🔥 Firebase config diterima:", firebase);
+
+      // Validasi sebelum inisialisasi
+      if (!firebase.apiKey || !firebase.authDomain) {
+        alert("Config Firebase tidak valid! apiKey kosong.");
+        throw new Error("Config Firebase tidak valid.");
+      }
+
+      // Inisialisasi dengan try-catch agar jelas errornya
+      try {
+        app = initializeApp(firebase);
+        auth = getAuth(app);
+        db = getFirestore(app);
+        console.log("✅ Firebase inisialisasi selesai pada domain:", window.location.origin);
+      } catch (err) {
+        console.error("❌ Gagal inisialisasi Firebase:", err);
+        alert("Gagal inisialisasi Firebase: " + err.message);
+        throw err;
+      }
+
       return db;
     }
 
@@ -833,6 +851,18 @@
     // Tekan Enter untuk login
     loginSection.addEventListener("keydown", (e) => {
       if (e.key === "Enter") { e.preventDefault(); loginBtn.click(); }
+    });
+
+    // Tombol login
+    loginBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      try {
+        const userCred = await signInWithEmailAndPassword(auth, email.value, password.value);
+        console.log("✅ Login berhasil:", userCred.user.email);
+      } catch (err) {
+        console.error("❌ Login gagal:", err.code, err.message);
+        showModal("Login gagal: " + err.code);
+      }
     });
 
     // === Inisialisasi Auth & kontrol login/logout (IIFE) ===
