@@ -494,10 +494,6 @@
     <h2 id="title">Admin Login</h2>
 
     <div id="tenantUrl" class="tenant-url" style="display:none;">
-      <div class="tenant-url-label">URL Admin Anda:</div>
-      <a href="#" target="_blank" rel="noopener noreferrer" id="tenantAdminLink" class="tenant-url-link"></a>
-
-      <div style="height:8px;"></div>
 
       <div class="tenant-url-label">URL Publik Anda:</div>
       <a href="#" target="_blank" rel="noopener noreferrer" id="tenantLink" class="tenant-url-link"></a>
@@ -935,36 +931,65 @@ Akun Anda terdaftar di tenant @${tenantFound}.`, "error", async () => {
           // URL & QR
           const tenantUrlDiv = document.getElementById("tenantUrl");
           const tenantLink = document.getElementById("tenantLink");
-          const tenantAdminLink = document.getElementById("tenantAdminLink");
+          // const tenantAdminLink = document.getElementById("tenantAdminLink");
 
           const displayUrl = `https://link-gr.id/${tenantFound}`;
           const actualUrl = `https://link-gr.id/?u=${tenantFound}`;
-          const displayAdminUrl = `https://link-gr.id/admin/${tenantFound}`;
-          const actualAdminUrl = `https://link-gr.id/admin.html?u=${tenantFound}`;
+          // const displayAdminUrl = `https://link-gr.id/admin/${tenantFound}`;
+          // const actualAdminUrl = `https://link-gr.id/admin.html?u=${tenantFound}`;
 
           tenantLink.textContent = displayUrl; tenantLink.href = actualUrl;
-          tenantAdminLink.textContent = displayAdminUrl; tenantAdminLink.href = actualAdminUrl;
+          // tenantAdminLink.textContent = displayAdminUrl; tenantAdminLink.href = actualAdminUrl;
           tenantUrlDiv.style.display = "block";
 
           const qrCanvas = document.getElementById("tenantQrCanvas");
           const downloadQrBtn = document.getElementById("downloadQrBtn");
 
           async function generateTenantQr() {
-            if (!qrCanvas || !tenantLink.href) return;
+            if (!qrCanvas) return;
+
             const isDark = document.body.classList.contains("dark-mode");
-            const bgColor = isDark ? "#1e1e1e" : "#ffffff";
-            const qrColor = isDark ? "#ffffff" : "#000000";
+            const bgColor = "#ffffff";
+            const qrColor = "#000000";
+            const urlToEncode = tenantLink.textContent.trim();
+
+            if (!/^https?:\/\//i.test(urlToEncode)) {
+              console.error("URL tidak valid untuk QR:", urlToEncode);
+              return;
+            }
+
             const ctx = qrCanvas.getContext("2d");
             ctx.clearRect(0, 0, qrCanvas.width, qrCanvas.height);
 
-            await QRCode.toCanvas(qrCanvas, tenantLink.href, {
-              width: 160, margin: 1, color: { dark: qrColor, light: bgColor },
+            // === QR code dengan margin kecil ===
+            await QRCode.toCanvas(qrCanvas, urlToEncode, {
+              width: 200,
+              margin: 1.5, // dikurangi dari 3 → lebih rapat
+              color: { dark: qrColor, light: bgColor },
             });
 
-            const logo = new Image(); logo.src = "logo-default.png";
+            // === Logo tengah dengan frame melengkung ===
+            const logo = new Image();
+            logo.src = "logo-default.png";
             logo.onload = () => {
-              const size = 36; const x = (qrCanvas.width - size) / 2; const y = (qrCanvas.height - size) / 2;
-              ctx.save(); ctx.beginPath(); ctx.roundRect(x - 3, y - 3, size + 6, size + 6, 6); ctx.fillStyle = bgColor; ctx.fill(); ctx.restore();
+              const size = 32;
+              const x = (qrCanvas.width - size) / 2;
+              const y = (qrCanvas.height - size) / 2;
+              const padding = 5; // kecilkan frame putih di sekitar logo
+
+              ctx.save();
+              ctx.beginPath();
+              ctx.roundRect(
+                x - padding / 2,
+                y - padding / 2,
+                size + padding,
+                size + padding,
+                8
+              );
+              ctx.fillStyle = bgColor;
+              ctx.fill();
+              ctx.restore();
+
               ctx.drawImage(logo, x, y, size, size);
             };
           }
