@@ -150,7 +150,6 @@
       transform: translateY(-2px);
     }
 
-    /* ===== Font kecil & wrap ===== */
     .small-cell {
       font-size: .8em;
       word-break: break-word;
@@ -159,7 +158,6 @@
       max-width: 180px;
     }
 
-    /* ===== Ikon tautan tenant ===== */
     .tenant-link {
       text-decoration: none;
       color: #3182ce;
@@ -194,7 +192,6 @@
     <button id="createBtn">Buat Tenant</button>
     <button id="logoutBtn">Keluar</button>
 
-    <!-- Daftar tenant -->
     <div class="tenant-list" id="tenantList">
       <table>
         <thead>
@@ -206,9 +203,7 @@
           </tr>
         </thead>
         <tbody id="tenantBody">
-          <tr>
-            <td colspan="4" style="text-align:center;">Memuat data...</td>
-          </tr>
+          <tr><td colspan="4" style="text-align:center;">Memuat data...</td></tr>
         </tbody>
       </table>
     </div>
@@ -218,13 +213,8 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-    import {
-      getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, createUserWithEmailAndPassword
-    } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-    import {
-      getFirestore, collection, getDocs, setDoc, doc, deleteDoc, getDoc
-    } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
-
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, setDoc, doc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
 
     // === Ambil konfigurasi dari Netlify ===
     const CONFIG_URL = "https://netlify-linktree.netlify.app/.netlify/functions/get-config";
@@ -242,15 +232,7 @@
       }
     })();
 
-    // === Firebase Init (dari config Netlify) ===
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-    import {
-      getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, createUserWithEmailAndPassword
-    } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-    import {
-      getFirestore, collection, getDocs, setDoc, doc, deleteDoc, getDoc
-    } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
-
+    // === Inisialisasi Firebase dari Netlify ===
     let app, auth, db;
     async function initFirebaseFromConfig() {
       if (db) return db;
@@ -300,22 +282,18 @@
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
-      <td class="small-cell">
-        ${tenant}
-        <a href="https://link-gr.id/?u=${tenant}" target="_blank"
-          class="tenant-link" title="Lihat halaman tenant">🔗</a>
-              </td>
-              <td class="small-cell">
-                ${email}
-        <a href="https://link-gr.id/admin.html?u=${tenant}" target="_blank"
-          class="tenant-link" title="Buka panel admin @${tenant}">
-          <i class="fas fa-external-link-alt"></i>
-        </a>
-      </td>
-      <td class="small-cell">${created}</td>
-      <td style="text-align:center;">
-        <button class="danger-btn" onclick="window.deleteTenant('${tenant}')">Hapus</button>
-      </td>`;
+        <td class="small-cell">${tenant}
+          <a href="https://link-gr.id/?u=${tenant}" target="_blank" class="tenant-link" title="Lihat halaman tenant">🔗</a>
+        </td>
+        <td class="small-cell">${email}
+          <a href="https://link-gr.id/admin.html?u=${tenant}" target="_blank" class="tenant-link" title="Buka panel admin @${tenant}">
+            <i class="fas fa-external-link-alt"></i>
+          </a>
+        </td>
+        <td class="small-cell">${created}</td>
+        <td style="text-align:center;">
+          <button class="danger-btn" onclick="window.deleteTenant('${tenant}')">Hapus</button>
+        </td>`;
         tenantBody.appendChild(tr);
       });
     }
@@ -330,9 +308,7 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ tenant })
         });
-
         const out = await res.json();
-
         if (out.success) {
           alert(`✅ Tenant '${tenant}' berhasil dihapus (termasuk akun Auth).`);
           await listTenants();
@@ -340,7 +316,6 @@
           alert(`❌ Gagal menghapus tenant: ${out.error || "Terjadi kesalahan."}`);
           row(`❌ Gagal: ${out.error || "Terjadi kesalahan."}`);
         }
-
       } catch (e) {
         console.error("Delete error:", e);
         row(`❌ Gagal koneksi: ${e.message}`);
@@ -354,13 +329,12 @@
       if (!name || !email || !pass) return alert("Isi semua kolom!");
 
       const tenant = name.toLowerCase().replace(/[^a-z0-9_-]/g, "");
-      // Cegah duplikasi tenant
       const existing = await getDoc(doc(db, "admins", tenant));
-      if (existing.exists()) {
-        alert(`Tenant '${tenant}' sudah ada!`);
-        return;
-      }
-      const secondaryApp = initializeApp(firebaseConfig, "Secondary");
+      if (existing.exists()) return alert(`Tenant '${tenant}' sudah ada!`);
+
+      // Gunakan config dari Netlify
+      const { firebase } = await window.__configReady;
+      const secondaryApp = initializeApp(firebase, "Secondary");
       const secondaryAuth = getAuth(secondaryApp);
       const newUser = await createUserWithEmailAndPassword(secondaryAuth, email, pass);
       const uid = newUser.user.uid;
@@ -379,7 +353,7 @@
       await setDoc(doc(db, "admins", tenant), {
         uid,
         email,
-        tenantId: tenant, // 🔥 tambahkan field tenantId
+        tenantId: tenant,
         createdAt: new Date().toISOString()
       });
       await setDoc(doc(db, "users", tenant, "site_header", "main"), template.site_header.main);
