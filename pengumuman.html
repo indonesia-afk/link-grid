@@ -69,25 +69,20 @@
             margin-bottom: 24px;
             word-break: normal;
             overflow-wrap: break-word;
-            /* potong hanya bila benar-benar perlu */
             white-space: pre-wrap;
         }
-
 
         .announcement-text a {
             color: #3182ce;
             text-decoration: underline;
             word-break: break-all;
-            /* izinkan pecah di mana saja */
             overflow-wrap: anywhere;
-            /* biar URL panjang bisa patah alami */
         }
 
         .announcement-text a:hover {
             color: #2563eb;
         }
 
-        /* ===== Footer & Logo ===== */
         .logo-image {
             margin-top: 24px;
             text-align: center;
@@ -99,8 +94,8 @@
             height: auto;
             object-fit: contain;
             display: inline-block;
-            opacity: 0.9;
-            transition: transform 0.3s ease, opacity 0.3s ease;
+            opacity: .9;
+            transition: transform .3s ease, opacity .3s ease;
         }
 
         .logo-img-card:hover {
@@ -129,7 +124,6 @@
             text-decoration: underline;
         }
 
-        /* ===== Theme switcher ===== */
         #theme-switcher {
             position: absolute;
             top: 15px;
@@ -143,7 +137,6 @@
             cursor: pointer;
         }
 
-        /* ===== Dark mode ===== */
         body.dark-mode {
             background: #121212;
             color: #e2e8f0;
@@ -174,19 +167,17 @@
         .divider {
             border: none;
             border-top: 1px solid #cbd5e0;
-            /* abu-abu lebih lembut */
             margin: 22px 0;
-            opacity: 0.8;
+            opacity: .8;
         }
 
         body.dark-mode .divider {
             border-top-color: #444;
-            opacity: 0.5;
+            opacity: .5;
         }
 
         h2 i {
             margin-right: 8px;
-            /* jarak antara ikon dan teks */
         }
     </style>
 </head>
@@ -194,14 +185,12 @@
 <body>
     <div class="card">
         <button id="theme-switcher"><i class="fas fa-moon"></i></button>
-
         <h2><i class="fa-solid fa-bullhorn"></i> Pengumuman</h2>
-
         <br>
 
         <div id="announcementContainer">
             <div class="subheader">Memuat pengumuman...</div>
-            <div class="announcement-text"><em>Menunggu data dari server...</em></div>
+            <div class="announcement-text"><em>Loading from server...</em></div>
         </div>
 
         <div class="logo-image">
@@ -217,28 +206,33 @@
         </footer>
     </div>
 
-    <!-- ====== SCRIPT ====== -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-        import {
-            getFirestore, collection, getDocs, orderBy, query
-        } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+        // === Ambil konfigurasi dari Netlify (konsisten dengan halaman lain) ===
+        const CONFIG_URL = "https://netlify-linktree.netlify.app/.netlify/functions/get-config";
+        window.__configReady = (async () => {
+            const res = await fetch(CONFIG_URL);
+            if (!res.ok) throw new Error("Config fetch failed " + res.status);
+            const cfg = await res.json();
+            window.APP_CONFIG = cfg;
+            return cfg;
+        })();
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCP2dnXfeRR57NNYarJSYtBDjve8K-bOd8",
-            authDomain: "linktree-wannabe.firebaseapp.com",
-            projectId: "linktree-wannabe",
-            storageBucket: "linktree-wannabe.firebasestorage.app",
-            messagingSenderId: "246673617043",
-            appId: "1:246673617043:web:573d5386df8b29c945dd66"
-        };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        // === Firebase (tanpa hardcoded) ===
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, orderBy, query } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
+
+        let db;
+        async function initFirebaseFromConfig() {
+            if (db) return db;
+            const { firebase } = await window.__configReady;   // ambil dari Netlify
+            const app = initializeApp(firebase);
+            db = getFirestore(app);
+            return db;
+        }
 
         function formatWIB(ts) {
-            if (!ts) return "";
+            if (!ts?.toDate) return "";
             const d = ts.toDate();
-            d.setHours(d.getHours()); // konversi ke WIB
             const day = String(d.getDate()).padStart(2, "0");
             const month = String(d.getMonth() + 1).padStart(2, "0");
             const year = String(d.getFullYear()).slice(2);
@@ -251,8 +245,10 @@
             const container = document.getElementById("announcementContainer");
             container.innerHTML = "<p><em>Memuat pengumuman...</em></p>";
 
-            const q = query(collection(db, "announcements"), orderBy("createdAt", "desc"));
-            const snap = await getDocs(q);
+            await initFirebaseFromConfig();
+
+            const qCol = query(collection(db, "announcements"), orderBy("createdAt", "desc"));
+            const snap = await getDocs(qCol);
 
             if (snap.empty) {
                 container.innerHTML = "<p><em>Belum ada pengumuman.</em></p>";
@@ -264,21 +260,21 @@
                 const d = doc.data();
                 const isiDenganLink = (d.isi || "").replace(
                     /(https?:\/\/[^\s]+)/g,
-                    '<a href="$1" target="_blank">$1</a>'
+                    '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
                 );
                 container.innerHTML += `
-            <div class="announcement-item">
-                <div class="subheader">${d.judul || "Tanpa judul"}</div>
-                <div class="date">${formatWIB(d.createdAt)}</div>
-                <div class="announcement-text"><p>${isiDenganLink.replace(/\n/g, "<br>")}</p></div>
-            </div>
-            <hr class="divider">
-            `;
+          <div class="announcement-item">
+            <div class="subheader">${d.judul || "Tanpa judul"}</div>
+            <div class="date">${formatWIB(d.createdAt)}</div>
+            <div class="announcement-text"><p>${isiDenganLink.replace(/\n/g, "<br>")}</p></div>
+          </div>
+          <hr class="divider">
+        `;
             });
         }
         loadAnnouncements();
 
-        // ===== Tema =====
+        // === Tema ===
         const themeBtn = document.getElementById("theme-switcher");
         const body = document.body;
         const icon = themeBtn.querySelector("i");
@@ -295,7 +291,6 @@
             localStorage.setItem("theme", isDark ? "dark" : "light");
         });
     </script>
-
 </body>
 
 </html>
