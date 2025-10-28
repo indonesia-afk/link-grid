@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reset Password – Links Grid</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --radius: 16px;
+      --transition: .3s;
+      --primary: #3182ce;
+      --primary-dark: #2563eb;
+    }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #f4f7f9;
+      color: #1a202c;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+      transition: background var(--transition), color var(--transition);
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      box-shadow: 0 6px 25px rgba(0,0,0,.05);
+      padding: 30px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+    }
+    h2 { margin-top: 0; color: #2d3748; }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0;
+      border: 1px solid #cbd5e0;
+      border-radius: 10px;
+      font-size: 1em;
+      transition: border var(--transition);
+      box-sizing: border-box;
+    }
+    input:focus { border-color: var(--primary); outline: none; }
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 10px;
+      font-size: 1em;
+      border-radius: 10px;
+      border: none;
+      background: var(--primary);
+      color: #fff;
+      cursor: pointer;
+      transition: background var(--transition), transform var(--transition);
+    }
+    button:hover { background: var(--primary-dark); transform: translateY(-2px); }
+    p.status {
+      font-size: .9em;
+      margin-top: 12px;
+      color: #4a5568;
+      min-height: 24px;
+      white-space: pre-line;
+    }
+    footer {
+      margin-top: 20px;
+      font-size: .85em;
+      color: #a0aec0;
+    }
+    footer a {
+      color: #3182ce;
+      text-decoration: none;
+    }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h2><i class="fa-solid fa-key"></i><br>Reset Password</h2>
+    <p id="emailDisplay" style="font-size:.9em;color:#4a5568;"></p>
+
+    <input type="password" id="newPassword" placeholder="Password baru">
+    <input type="password" id="confirmPassword" placeholder="Konfirmasi password">
+    <button id="resetBtn">Ganti Password</button>
+
+    <p id="status" class="status"></p>
+
+    <footer>
+      <a href="https://link-gr.id" target="_blank">Link-Grid </a>by @TOMMY
+    </footer>
+  </div>
+
+  <script type="module">
+    // === Ambil konfigurasi Firebase dari Netlify (tanpa hardcoded) ===
+    const CONFIG_URL = "https://netlify-linktree.netlify.app/.netlify/functions/get-config";
+    window.__configReady = (async () => {
+      const res = await fetch(CONFIG_URL);
+      if (!res.ok) throw new Error("Config fetch failed " + res.status);
+      const cfg = await res.json();
+      window.APP_CONFIG = cfg;
+      return cfg;
+    })();
+
+    // === Import Firebase ===
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+    import {
+      getAuth, verifyPasswordResetCode, confirmPasswordReset
+    } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+
+    let auth;
+    async function initFirebaseFromConfig() {
+      if (auth) return auth;
+      const { firebase } = await window.__configReady;
+      const app = initializeApp(firebase);
+      auth = getAuth(app);
+      console.log("✅ Firebase inisialisasi selesai (reset)");
+      return auth;
+    }
+
+    const emailDisplay = document.getElementById("emailDisplay");
+    const newPass = document.getElementById("newPassword");
+    const confirmPass = document.getElementById("confirmPassword");
+    const resetBtn = document.getElementById("resetBtn");
+    const status = document.getElementById("status");
+
+    const params = new URLSearchParams(window.location.search);
+    const oobCode = params.get("oobCode");
+
+    async function verifyCode() {
+      await initFirebaseFromConfig();
+
+      if (!oobCode) {
+        status.textContent = "Link reset tidak valid. Pastikan kamu membuka tautan dari email.";
+        resetBtn.disabled = true;
+        return;
+      }
+
+      status.textContent = "🔄 Memverifikasi tautan reset password...";
+      try {
+        const email = await verifyPasswordResetCode(auth, oobCode);
+        emailDisplay.textContent = "Akun: " + email;
+        status.textContent = "Kode valid. Silakan masukkan password baru di bawah ini.";
+      } catch (error) {
+        console.error("Verifikasi gagal:", error);
+        status.textContent = "⚠️ Link reset tidak valid atau sudah kedaluwarsa.";
+        resetBtn.disabled = true;
+      }
+    }
+
+    verifyCode();
+
+    resetBtn.addEventListener("click", async () => {
+      const pass1 = newPass.value.trim();
+      const pass2 = confirmPass.value.trim();
+      if (!pass1 || !pass2) return status.textContent = "Isi kedua kolom password.";
+      if (pass1.length < 6) return status.textContent = "Minimal 6 karakter.";
+      if (pass1 !== pass2) return status.textContent = "Password tidak cocok.";
+
+      resetBtn.disabled = true;
+      resetBtn.style.opacity = "0.7";
+      status.textContent = "⏳ Memproses...";
+
+      try {
+        await confirmPasswordReset(auth, oobCode, pass1);
+        status.textContent = "✅ Password berhasil diubah!\nKamu bisa login kembali sekarang.";
+        setTimeout(() => window.location.href = "/admin", 4000);
+      } catch (error) {
+        console.error(error);
+        status.textContent = "Gagal mengubah password: " + error.message;
+      } finally {
+        setTimeout(() => {
+          resetBtn.disabled = false;
+          resetBtn.style.opacity = "1";
+        }, 5000);
+      }
+    });
+  </script>
+</body>
+</html>

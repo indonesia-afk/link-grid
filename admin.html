@@ -532,6 +532,10 @@
       <input type="email" id="email" placeholder="Email">
       <input type="password" id="password" placeholder="Password">
       <button id="loginBtn" class="btn-primary">Masuk</button>
+      <!-- 🔗 Link Lupa Password -->
+      <p style="margin-top:10px;font-size:.9em;">
+        <a href="#" id="forgotLink" style="color:#3182ce;text-decoration:none;">Lupa password?</a>
+      </p>
     </div>
 
     <div id="dashboard" style="display:none;">
@@ -608,7 +612,7 @@
     // === Import Firebase & QR ===
     import QRCode from "https://cdn.jsdelivr.net/npm/qrcode@1.5.3/+esm";
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, sendPasswordResetEmail} from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
     import { getFirestore, collection, getDocs, addDoc, deleteDoc, updateDoc, doc, setDoc, query, orderBy, getDoc, writeBatch } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js";
     import { getIdTokenResult } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 
@@ -871,7 +875,48 @@
         const userCred = await signInWithEmailAndPassword(auth, email.value, password.value);
       } catch (err) {
         console.error("❌ Login gagal:", err.code, err.message);
-        showModal("Login gagal: " + err.code);
+        showModal("Login Gagal");
+      }
+    });
+
+    // === 🔐 Fitur Lupa Password ===
+    const forgotLink = document.getElementById("forgotLink");
+    forgotLink.addEventListener("click", async (e) => {
+      e.preventDefault();
+
+      const userEmail = email.value.trim();
+      if (!userEmail) {
+        showModal("Masukkan email kamu terlebih dahulu sebelum reset password.", "info");
+        return;
+      }
+
+      // Mencegah klik berulang
+      forgotLink.style.pointerEvents = "none";
+      forgotLink.style.opacity = "0.6";
+
+      try {
+        // Tampilkan status proses
+        showToast("Mengirim email reset password...");
+
+        await sendPasswordResetEmail(auth, userEmail);
+
+        showModal(`📧 Link reset password telah dikirim ke ${userEmail}. 
+Periksa inbox atau folder spam kamu.`, "success");
+      } catch (error) {
+        console.error("Reset password error:", error);
+
+        let message = "Gagal mengirim email reset.";
+        if (error.code === "auth/user-not-found") message = "Email tidak ditemukan dalam sistem.";
+        else if (error.code === "auth/invalid-email") message = "Format email tidak valid.";
+        else message = "Terjadi kesalahan: " + error.message;
+
+        showModal(message, "error");
+      } finally {
+        // Re-enable setelah 5 detik
+        setTimeout(() => {
+          forgotLink.style.pointerEvents = "auto";
+          forgotLink.style.opacity = "1";
+        }, 5000);
       }
     });
 

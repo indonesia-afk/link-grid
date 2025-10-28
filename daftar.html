@@ -355,13 +355,10 @@
       <p>🌐 Alamat URL Link-Grid kamu:<br>
         <a id="linkUser" href="#" target="_blank">https://link-gr.id/...</a>
       </p>
-      <p>🛠️ Halaman Admin kamu:<br>
-        <a id="linkAdmin" href="#" target="_blank">https://link-gr.id/admin/...</a>
-      </p>
     </div>
 
     <div class="form-group">
-      <input id="user" placeholder="User Name (huruf/angka saja)">
+      <input id="user" placeholder="Your Link-Grid Name (Letters & Numbers Only)">
       <input id="email" type="email" placeholder="Email Address">
       <input id="pass" type="password" placeholder="Password">
       <input id="pass2" type="password" placeholder="Confirm Password">
@@ -421,8 +418,6 @@
         infoBox.classList.add("show");
         linkUser.textContent = `https://link-gr.id/${user}`;
         linkUser.href = `https://link-gr.id/${user}`;
-        linkAdmin.textContent = `https://link-gr.id/admin/${user}`;
-        linkAdmin.href = `https://link-gr.id/admin/${user}`;
       } else {
         infoBox.style.display = "none";
       }
@@ -440,7 +435,7 @@
       if (!isValidUserName(user)) return setMsg("error", "Nama user hanya huruf, angka, - atau _ (3–20 karakter)");
       if (pass !== pass2) return setMsg("error", "Password tidak cocok!");
 
-      setMsg("loading", "⏳ Mengecek nama user...");
+      setMsg("loading", "⏳ Sedang mengecek nama Link-Grid kamu...");
       elBtn.disabled = true;
 
       try {
@@ -451,7 +446,7 @@
         });
         const check = await resCheck.json();
         if (check.exists) {
-          setMsg("error", "❌ User sudah ada, gunakan nama lain.");
+          setMsg("error", "❌ Nama Link-Grid tidak tersedia, gunakan nama lain.");
           elBtn.disabled = false;
           return;
         }
@@ -473,8 +468,6 @@
             elMsg.style.display = "block";
             elMsg.innerHTML = `
               ✅ Akun <b>${data.tenant}</b> berhasil dibuat!<br>
-              🛠️ Halaman Admin kamu:
-              <a href="${adminURL}" target="_blank" style="color:#63b3ed">${adminURL}</a><br>
               Browser akan membuka halaman admin kamu dalam ${countdown} detik...
             `;
           };
