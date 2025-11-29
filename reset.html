@@ -145,7 +145,7 @@
       try {
         const email = await verifyPasswordResetCode(auth, oobCode);
         emailDisplay.textContent = "Akun: " + email;
-        status.textContent = "Kode valid. Silakan masukkan password baru di bawah ini.";
+        status.textContent = "Kode valid. Silakan masukkan password baru.";
       } catch (error) {
         console.error("Verifikasi gagal:", error);
         status.textContent = "⚠️ Link reset tidak valid atau sudah kedaluwarsa.";
