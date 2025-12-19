@@ -517,7 +517,7 @@
       themeIcon.classList.toggle("fa-sun");
     });
   </script>
-  
+
 <script>
   // === Registrasi Service Worker ===
   if ("serviceWorker" in navigator) {
@@ -576,8 +576,8 @@
     hideTimer = setTimeout(() => {
       removeInstallBtn();
       // sengaja tidak simpan "dismissed"
-      // agar saat refresh muncul lagi 10 detik
-    }, 10000);
+      // agar saat refresh muncul lagi 5 detik
+    }, 5000);
 
     installBtn.addEventListener("click", async () => {
       if (!deferredPrompt) return;
