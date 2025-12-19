@@ -517,58 +517,88 @@
       themeIcon.classList.toggle("fa-sun");
     });
   </script>
+  
+<script>
+  // === Registrasi Service Worker ===
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/sw.js").catch(console.error);
+    });
+  }
 
-  <script>
-    // === Registrasi Service Worker ===
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("/sw.js").catch(console.error);
-      });
+  // === Prompt Install Melayang (muncul 10 detik setiap refresh jika belum install) ===
+  let deferredPrompt = null;
+  let installBtn = null;
+  let hideTimer = null;
+
+  function removeInstallBtn() {
+    if (hideTimer) {
+      clearTimeout(hideTimer);
+      hideTimer = null;
     }
+    if (installBtn) {
+      installBtn.remove();
+      installBtn = null;
+    }
+  }
 
-    // === Prompt Install Melayang ===
-    let deferredPrompt;
-    window.addEventListener("beforeinstallprompt", (e) => {
-      e.preventDefault();
-      if (localStorage.getItem("pwaInstalled") === "true") return;
-      deferredPrompt = e;
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
 
-      const btn = document.createElement("button");
-      btn.textContent = "📱 Install Aplikasi Link-Grid";
-      Object.assign(btn.style, {
-        position: "fixed",
-        bottom: "20px",
-        right: "20px",
-        padding: "10px 16px",
-        borderRadius: "12px",
-        background: "#3182ce",
-        color: "#fff",
-        border: "none",
-        fontFamily: "Plus Jakarta Sans, sans-serif",
-        fontSize: "15px",
-        cursor: "pointer",
-        boxShadow: "0 4px 10px rgba(0,0,0,0.15)",
-        zIndex: "9999"
-      });
-      document.body.appendChild(btn);
+    // Jika sudah install, jangan tampilkan lagi
+    if (localStorage.getItem("pwaInstalled") === "true") return;
 
-      btn.addEventListener("click", async () => {
-        deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === "accepted") {
-          localStorage.setItem("pwaInstalled", "true");
-          btn.remove();
-        }
-        deferredPrompt = null;
-      });
+    deferredPrompt = e;
+
+    // Cegah tombol dobel
+    removeInstallBtn();
+
+    installBtn = document.createElement("button");
+    installBtn.textContent = "📱 Install Aplikasi Link-Grid";
+    Object.assign(installBtn.style, {
+      position: "fixed",
+      bottom: "20px",
+      right: "20px",
+      padding: "10px 16px",
+      borderRadius: "12px",
+      background: "#3182ce",
+      color: "#fff",
+      border: "none",
+      fontFamily: "Plus Jakarta Sans, sans-serif",
+      fontSize: "15px",
+      cursor: "pointer",
+      boxShadow: "0 4px 10px rgba(0,0,0,0.15)",
+      zIndex: "9999"
     });
+    document.body.appendChild(installBtn);
 
-    window.addEventListener("appinstalled", () => {
-      localStorage.setItem("pwaInstalled", "true");
+    // ⏱ Auto-hide setelah 10 detik
+    hideTimer = setTimeout(() => {
+      removeInstallBtn();
+      // sengaja tidak simpan "dismissed"
+      // agar saat refresh muncul lagi 10 detik
+    }, 10000);
+
+    installBtn.addEventListener("click", async () => {
+      if (!deferredPrompt) return;
+
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+
+      if (outcome === "accepted") {
+        localStorage.setItem("pwaInstalled", "true");
+      }
+
+      deferredPrompt = null;
+      removeInstallBtn();
     });
-  </script>
+  });
+
+  window.addEventListener("appinstalled", () => {
+    localStorage.setItem("pwaInstalled", "true");
+    removeInstallBtn();
+  });
+</script>
 
 </body>
-
-
 </html>
