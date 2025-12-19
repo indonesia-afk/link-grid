@@ -293,28 +293,46 @@
       row("Memuat data...");
       const snap = await getDocs(collection(db, "admins"));
       if (snap.empty) return row("Belum ada tenant");
+
+      // ⬇️ Ambil semua tenant ke array
+      const tenants = [];
+      snap.forEach(docSnap => {
+        tenants.push({
+          id: docSnap.id,
+          ...docSnap.data()
+        });
+      });
+
+      // ⬇️ SORT: tanggal TERBARU di atas
+      tenants.sort((a, b) => {
+        const da = a.createdAt ? new Date(a.createdAt) : new Date(0);
+        const db = b.createdAt ? new Date(b.createdAt) : new Date(0);
+        return db - da; // DESC
+      });
+
       tenantBody.innerHTML = "";
 
-      snap.forEach(docSnap => {
-        const d = docSnap.data();
-        const tenant = docSnap.id;
+      // ⬇️ Render setelah disortir
+      tenants.forEach(d => {
+        const tenant = d.id;
         const email = d.email || "-";
         const created = d.createdAt ? shortDate(d.createdAt) : "-";
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
-        <td class="small-cell">${tenant}
-          <a href="https://link-gr.id/?u=${tenant}" target="_blank" class="tenant-link" title="Lihat halaman tenant">🔗</a>
-        </td>
-        <td class="small-cell">${email}
-          <a href="https://link-gr.id/admin.html?u=${tenant}" target="_blank" class="tenant-link" title="Buka panel admin @${tenant}">
-            <i class="fas fa-external-link-alt"></i>
-          </a>
-        </td>
-        <td class="small-cell">${created}</td>
-        <td style="text-align:center;">
-          <button class="danger-btn" onclick="window.deleteTenant('${tenant}')">Hapus</button>
-        </td>`;
+      <td class="small-cell">
+        ${tenant}
+        <a href="https://link-gr.id/?u=${tenant}" target="_blank" class="tenant-link">🔗</a>
+      </td>
+      <td class="small-cell">
+        ${email}
+        <a href="https://link-gr.id/admin.html?u=${tenant}" target="_blank" class="tenant-link">⚙️</a>
+      </td>
+      <td class="small-cell">${created}</td>
+      <td style="text-align:center;">
+        <button class="danger-btn" onclick="window.deleteTenant('${tenant}')">Hapus</button>
+      </td>
+    `;
         tenantBody.appendChild(tr);
       });
     }
@@ -417,3 +435,4 @@
 </body>
 
 </html>
+
